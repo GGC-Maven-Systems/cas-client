@@ -7,6 +7,8 @@ package org.guanzon.cas.client.controller;
 import java.net.URL;
 import java.sql.SQLException;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -23,6 +25,7 @@ import org.guanzon.appdriver.agent.ShowMessageFX;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
+import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.client.Client_Role;
 import org.guanzon.cas.client.services.ClientControllers;
@@ -99,7 +102,7 @@ public class ClientRoleController implements Initializable {
         try {
             if (poGRider == null) {
                 ShowMessageFX.Warning(getStage(), "Application driver is not set.", "Warning", MODULE);
-                System.exit(1);
+                getStage().close();
             }
 
             poRole = new ClientControllers(poGRider, poWrapper).ClientRole();
@@ -110,7 +113,7 @@ public class ClientRoleController implements Initializable {
             pbLoaded = true;
         } catch (SQLException | GuanzonException e) {
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }
         
     }
@@ -168,6 +171,7 @@ public class ClientRoleController implements Initializable {
                             ShowMessageFX.Warning(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
                             break;
                         }else{
+                            ShowMessageFX.Information(getStage(), (String) poJSON.get("message"), "Success", MODULE);
                             psRoleIDxx = poRole.getModel().getRoleIDxx();
                             pbCancelled = false;
                             
@@ -177,9 +181,12 @@ public class ClientRoleController implements Initializable {
                     break;
 
             }
-        } catch (SQLException | GuanzonException | CloneNotSupportedException e) {
-            ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+        }   catch (CloneNotSupportedException | SQLException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            ShowMessageFX.Error(getStage(),MiscUtil.getException(ex), "Warning", MODULE);
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(e), e);
+            ShowMessageFX.Error(getStage(),MiscUtil.getException(e), "Warning", MODULE);
         }
     }
     

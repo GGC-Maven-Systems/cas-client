@@ -26,6 +26,7 @@ public class Model_Client_Institution_Contact extends Model{
             MiscUtil.initRowSet(poEntity);
             
             //assign default values
+            poEntity.updateString("cPayeexxx", Logical.NO);
             poEntity.updateString("cPrimaryx", Logical.NO);
             poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
             //end - assign default values

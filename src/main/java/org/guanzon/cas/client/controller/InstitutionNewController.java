@@ -43,6 +43,7 @@ import org.guanzon.appdriver.base.CommonUtils;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
+import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.constant.ClientType;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.cas.client.ClientGUI;
@@ -242,6 +243,10 @@ public class InstitutionNewController implements Initializable {
     public void setClientId(String clientId) {
         psClientID = clientId;
     }
+    
+    public String getClientId() {
+        return psClientID;
+    }
 
     public ClientInfo getClient() {
         return poClient;
@@ -260,7 +265,7 @@ public class InstitutionNewController implements Initializable {
         try {
             if (poGRider == null) {
                 ShowMessageFX.Warning(getStage(), "Application driver is not set.", "Warning", MODULE);
-                System.exit(1);
+                getStage().close();
             }
 
             initFields();
@@ -275,12 +280,12 @@ public class InstitutionNewController implements Initializable {
             pbLoaded = true;
         } catch (SQLException | GuanzonException e) {
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }
     }
 
     private void cmdButton_Click(ActionEvent event){
-        try {
+        try{
             switch (((Button) event.getSource()).getId()) {
                 case "btnExit":
                 case "btnCancel":
@@ -291,11 +296,11 @@ public class InstitutionNewController implements Initializable {
                 case "btnSave":
                     if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
                         poJSON = poClient.saveRecord();
-
+                        System.out.println(poJSON.toJSONString());
                         if (!"success".equals((String) poJSON.get("result"))) {
                             ShowMessageFX.Warning(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
-                            break;
-                        }else{
+                        } else {
+                            ShowMessageFX.Information(getStage(), (String) poJSON.get("message"), "Success", MODULE);
                             psClientID = poClient.getModel().getClientId();
                             pbCancelled = false;
                             getStage().close();
@@ -304,7 +309,8 @@ public class InstitutionNewController implements Initializable {
                     break;
                 case "btnAddAddress":
                     
-                    JSONObject addObjAddress = poClient.addAddress();
+                    JSONObject addObjAddress;
+                    addObjAddress = poClient.addAddress();
                     
                     if ("error".equals((String) addObjAddress.get("result"))) {
                         ShowMessageFX.Information(getStage(), (String) addObjAddress.get("message"), "Computerized Acounting System", MODULE);
@@ -349,10 +355,15 @@ public class InstitutionNewController implements Initializable {
                     break;
 
             }
+            
+        } catch (CloneNotSupportedException | SQLException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            ShowMessageFX.Error(getStage(),MiscUtil.getException(ex), "Warning", MODULE);
         } catch (Exception e) {
-            ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(e), e);
+            ShowMessageFX.Error(getStage(),MiscUtil.getException(e), "Warning", MODULE);
         }
+        
     }
 
     private void company_Clicked(MouseEvent event) {
@@ -413,7 +424,7 @@ public class InstitutionNewController implements Initializable {
             }
         } catch (SQLException | GuanzonException e) {
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }
 
         switch (event.getCode()) {
@@ -586,6 +597,16 @@ public class InstitutionNewController implements Initializable {
 
                     txtField.setText(poClient.InstiContact(pnContactPerson).getsDeprtmnt());
                 break;
+                case 8: //Role
+                    if(lsValue == null || "".equals(lsValue)){
+                        poJSON = poClient.InstiContact(pnContactPerson).setsRoleIDxx(lsValue);
+                        if (!"success".equals((String) poJSON.get("result"))) {
+                            ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                        }
+                        txtContact08.setText("");
+                    }
+
+                break;
 
             }
 
@@ -668,6 +689,7 @@ public class InstitutionNewController implements Initializable {
         txtContact06.focusedProperty().addListener(txtContactPerson_Focus);
         txtContact01.focusedProperty().addListener(txtContactPerson_Focus);
         txtContact07.focusedProperty().addListener(txtContactPerson_Focus);
+        txtContact08.focusedProperty().addListener(txtContactPerson_Focus);
 
         txtContact00.setOnKeyPressed(this::txtContactPerson_KeyPressed);
         txtContact02.setOnKeyPressed(this::txtContactPerson_KeyPressed);
@@ -738,48 +760,44 @@ public class InstitutionNewController implements Initializable {
 
             if (psClientID.isEmpty()) {
                 poJSON = poClient.newRecord();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    return;
+                }
 
                 anchorAddress.setDisable(false);
                 gridAddress.setDisable(false);
                 anchorSocMed.setDisable(false);
                 gridSocMed.setDisable(false);
                 
-                poClient.getModel().setCompanyName(psClientID);
-                txtField02.setText(psClientID);
-                txtAddress00.setText(psClientID);
+//                poClient.getModel().setCompanyName(psClientID);
+//                txtField02.setText(psClientID);
+//                txtAddress00.setText(psClientID);
                 lblClientStatus.setText("***NEW INSTITUTION");
             } else {
                 poJSON = poClient.openClientRecord(psClientID);
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    return;
+                }
                 
                 //for update record, add new row to avoid null pointer exception on missing records from old entries -Guillier 2026/03/24
                 poJSON = poClient.updateRecord();
-                pnEditMode = poClient.getEditMode();
-                
-                if(pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE){
-                    
-                    //allow to modify contact on update
-                    anchorSocMed.setDisable(false);
-                    gridSocMed.setDisable(false);
-                    
-                    //allow to modify address on update
-                    anchorAddress.setDisable(false);
-                    gridAddress.setDisable(false);
-                }else{
-                    anchorSocMed.setDisable(true);
-                    gridSocMed.setDisable(true);
-                    
-                    anchorAddress.setDisable(true);
-                    gridAddress.setDisable(true);
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    return;
                 }
+                pnEditMode = poClient.getEditMode();
+                boolean lbShow = pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE;//allow to modify contact on update
+                anchorSocMed.setDisable(!lbShow);
+                gridSocMed.setDisable(!lbShow);
 
+                //allow to modify address on update
+                anchorAddress.setDisable(!lbShow);
+                gridAddress.setDisable(!lbShow);
                 lblClientStatus.setText("***REPEAT INSTITUTION");
             }
-
-            if (!"success".equals((String) poJSON.get("result"))) {
-                ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Error", MODULE);
-                System.exit(1);
-            }
-
+            
             txtField01.setText(poClient.getModel().getClientId());
             txtField02.setText(poClient.getModel().getCompanyName());
             txtAddress00.setText(poClient.getModel().getCompanyName());
@@ -798,7 +816,7 @@ public class InstitutionNewController implements Initializable {
         } catch (SQLException | GuanzonException | CloneNotSupportedException e) {
             e.printStackTrace();
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }
     }
 
@@ -1060,7 +1078,7 @@ public class InstitutionNewController implements Initializable {
 
     private void initContactPersonCheckbox() {
         
-        CheckBox[] cbMobileCheckboxes = {cbContact01, cbContact02};
+        CheckBox[] cbMobileCheckboxes = {cbContact01, cbContact02, cbContact00};
         
         for (CheckBox checkbox : cbMobileCheckboxes) {
             
@@ -1125,15 +1143,13 @@ public class InstitutionNewController implements Initializable {
         //change client type temporary for searching client individual
         poClient.setClientType(ClientType.INDIVIDUAL);
         
-        poJSON =  poClient.searchContactPerson(lsValue, false);
-        
+        poJSON =  poClient.searchContactPerson(lsValue, false);    
         if (poJSON == null) {
             ShowMessageFX.Warning(getStage(), "No record to load", MODULE, "");
             return;
         }
         
         if ("success".equalsIgnoreCase(poJSON.get("result").toString())) {
-            
             if (poClient.ContactPerson().getModel().getClientId() == null || poClient.ContactPerson().getModel().getClientId().isEmpty()) {
                 ShowMessageFX.Warning(getStage(), "No record loaded", MODULE, "");
                 return;
@@ -1154,7 +1170,8 @@ public class InstitutionNewController implements Initializable {
     }
     
     private void addContactPerson() throws Exception{
-
+        String lsClientId = poClient.InstiContact(pnContactPerson).getcCPrsonID();
+        
         //initialize Client GUI
         ClientGUI loClient = new ClientGUI();
 
@@ -1169,7 +1186,7 @@ public class InstitutionNewController implements Initializable {
         loClient.setByCode(false);
         
         //initialize empty client to create new entry, else, load client id
-        loClient.setClientId("");
+        loClient.setClientId(lsClientId);
 
         // Get screen bounds
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
@@ -1224,7 +1241,7 @@ public class InstitutionNewController implements Initializable {
     }
     
     private void addContactRole() throws Exception{
-        
+        String lsRoleId = poClient.InstiContact(pnContactPerson).getsRoleIDxx();
         //initialize Client GUI
         ClientGUI loClient = new ClientGUI();
 
@@ -1239,7 +1256,7 @@ public class InstitutionNewController implements Initializable {
         loClient.setByCode(false);
         
         //initialize empty role to create new entry, else, load role id
-        loClient.setRoleID(null);
+        loClient.setRoleID(lsRoleId);
 
         // Get screen bounds
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();

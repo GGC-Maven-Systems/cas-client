@@ -10,6 +10,8 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -59,6 +61,7 @@ import org.guanzon.cas.parameter.Province;
 import org.guanzon.cas.parameter.TownCity;
 import org.json.simple.JSONObject;
 import javafx.util.StringConverter;
+import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 
 public class IndividualNewController implements Initializable {
@@ -291,6 +294,10 @@ public class IndividualNewController implements Initializable {
         psClientID = clientId;
     }
     
+    public String getClientId() {
+        return psClientID;
+    }
+    
     public ClientInfo getClient(){
         return poClient;
     }
@@ -312,7 +319,7 @@ public class IndividualNewController implements Initializable {
         try {
             if (poGRider == null){
                 ShowMessageFX.Warning(getStage(), "Application driver is not set.", "Warning", MODULE);
-                System.exit(1);
+                getStage().close();
             }
                         
             initFields();
@@ -326,7 +333,7 @@ public class IndividualNewController implements Initializable {
             pbLoaded = true;
         } catch (SQLException | GuanzonException e) {
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }
     }        
     
@@ -340,18 +347,18 @@ public class IndividualNewController implements Initializable {
                     getStage().close();
                     break;
                 case "btnSave":
-                    if (pnEditMode == EditMode.ADDNEW) {
+                    if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
                         poJSON = poClient.saveRecord();
-
                         if (!"success".equals((String) poJSON.get("result"))){
                             ShowMessageFX.Warning(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
-                            break;
+                        } else {
+                            ShowMessageFX.Information(getStage(), (String) poJSON.get("message"), "Success", MODULE);
+                            psClientID = poClient.getModel().getClientId();
+                            pbCancelled = false;
+                            getStage().close();
                         }
                     }
-                    
-                    psClientID = poClient.getModel().getClientId();
-                    pbCancelled = false;
-                    getStage().close();
+
                     break;
                 case "btnAddAddress":
                     JSONObject addObjAddress = poClient.addAddress();
@@ -400,7 +407,7 @@ public class IndividualNewController implements Initializable {
                     JSONObject addSocMed = poClient.addSocMed();
                     
                     if ("error".equals((String) addSocMed.get("result"))) {
-                        ShowMessageFX.Information((String) addSocMed.get("message"), "Computerized Acounting System", MODULE);
+                        ShowMessageFX.Information(getStage(),(String) addSocMed.get("message"), "Computerized Acounting System", MODULE);
                         break;
                     } else {
                         poClient.SocMed(pnSocmed).setClientId(poClient.getModel().getClientId());
@@ -413,9 +420,12 @@ public class IndividualNewController implements Initializable {
                     }
                     break;
             }
-        } catch (SQLException | GuanzonException | CloneNotSupportedException e) {
-            ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+        }  catch (CloneNotSupportedException | SQLException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+            ShowMessageFX.Error(getStage(),MiscUtil.getException(ex), "Warning", MODULE);
+        } catch (Exception e) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(e), e);
+            ShowMessageFX.Error(getStage(),MiscUtil.getException(e), "Warning", MODULE);
         }
     }
     
@@ -454,7 +464,6 @@ public class IndividualNewController implements Initializable {
                 switch (lnIndex){
                     case 6: //citizenship
                         poJSON = poClient.searcbNationality(lsValue, false);
-                        
                         if ("success".equals((String) poJSON.get("result"))){
                             txtField.setText(poClient.getModel().Citizenship().getNationality());
                             CommonUtils.SetNextFocus(txtField);
@@ -463,9 +472,16 @@ public class IndividualNewController implements Initializable {
                         break;
                     case 8: //birthplace
                         poJSON = poClient.searchBirthPlace(lsValue);
-                        
                         if ("success".equals((String) poJSON.get("result"))){
                             txtField.setText(poClient.getModel().BirthTown().getDescription());
+                            CommonUtils.SetNextFocus(txtField);
+                            event.consume();
+                        }
+                        break;
+                    case 11: //spouse
+                        poJSON = poClient.searchSpouse(lsValue);
+                        if ("success".equals((String) poJSON.get("result"))){
+                            txtField.setText(poClient.getSpouseName());
                             CommonUtils.SetNextFocus(txtField);
                             event.consume();
                         }
@@ -474,7 +490,7 @@ public class IndividualNewController implements Initializable {
             }
         } catch (SQLException | GuanzonException e) {
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }
         
 
@@ -531,7 +547,7 @@ public class IndividualNewController implements Initializable {
             }
         } catch (SQLException | GuanzonException e) {
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }
 
         switch (event.getCode()){
@@ -652,6 +668,16 @@ public class IndividualNewController implements Initializable {
                     
                     txtField.setText(poClient.getModel().getSuffixName());
                     txtField02.setText((poClient.getModel().getLastName() + ", " + poClient.getModel().getFirstName() + " " + poClient.getModel().getSuffixName() + " " + poClient.getModel().getMiddleName()).trim());                    
+                    break;
+                case 11: //Spouse
+                    if(lsValue.isEmpty()){
+                        poJSON = poClient.getModel().setSpouseId(lsValue);
+                        if (!"success".equals((String) poJSON.get("result"))){
+                            ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                        }
+
+                        txtField.setText("");
+                    }
                     break;
                 case 12:
                     poJSON = poClient.getModel().setMothersMaidenName(lsValue);
@@ -1073,9 +1099,15 @@ public class IndividualNewController implements Initializable {
 
         cmbPersonal10.setOnAction(event -> {            
             poJSON = poClient.getModel().setCivilStatus(String.valueOf(cmbPersonal10.getSelectionModel().getSelectedIndex()));
-            
             if(!"success".equals((String) poJSON.get("result"))){
                 ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+            }
+            if(Integer.parseInt(poClient.getModel().getCivilStatus()) != 1){
+                poClient.getModel().setSpouseId("");
+                txtPersonal11.setText("");
+                txtPersonal11.setDisable(true);
+            } else {
+                txtPersonal11.setDisable(false);
             }
         });
         
@@ -1214,6 +1246,10 @@ public class IndividualNewController implements Initializable {
         
             if (pnEditMode == EditMode.ADDNEW){
                 poJSON =  poClient.newRecord();
+                if (!"success".equals((String) poJSON.get("result"))){
+                    ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Error", MODULE);
+                    getStage().close();
+                }
                 
                 anchorPersonal.setDisable(false);
                 gridAddress.setDisable(false);
@@ -1224,19 +1260,24 @@ public class IndividualNewController implements Initializable {
                 lblClientStatus.setText("***NEW CUSTOMER");
             } else {
                 poJSON = poClient.openClientRecord(psClientID);
+                if (!"success".equals((String) poJSON.get("result"))){
+                    ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Error", MODULE);
+                    getStage().close();
+                }
                 
-                anchorPersonal.setDisable(true);
-                gridAddress.setDisable(true);
-                gridMobile.setDisable(true);
-                gridEmail.setDisable(true);
-                gridSocMed.setDisable(true);
+                poJSON = poClient.updateRecord();
+                if (!"success".equals((String) poJSON.get("result"))){
+                    ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Error", MODULE);
+                    getStage().close();
+                }
+                
+//                anchorPersonal.setDisable(true);
+//                gridAddress.setDisable(true);
+//                gridMobile.setDisable(true);
+//                gridEmail.setDisable(true);
+//                gridSocMed.setDisable(true);
                 
                 lblClientStatus.setText("***REPEAT CUSTOMER");
-            }
-                
-            if (!"success".equals((String) poJSON.get("result"))){
-                ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Error", MODULE);
-                System.exit(1);
             }
             
             txtField01.setText(poClient.getModel().getClientId());            
@@ -1276,7 +1317,7 @@ public class IndividualNewController implements Initializable {
         } catch (SQLException | GuanzonException | CloneNotSupportedException e) {
             e.printStackTrace();
             ShowMessageFX.Error(getStage(), e.getMessage(), "Error", MODULE);
-            System.exit(1);
+            getStage().close();
         }       
     }
     
@@ -1567,8 +1608,9 @@ public class IndividualNewController implements Initializable {
 
             int lsCivilStatus = Integer.parseInt(poClient.getModel().getCivilStatus());
             cmbPersonal10.getSelectionModel().select(lsCivilStatus);
-
-            txtPersonal11.setText(poClient.getModel().getCompanyName());
+            
+            txtPersonal11.setDisable(lsCivilStatus != 1);
+            txtPersonal11.setText(poClient.getSpouseName());
             txtPersonal12.setText(poClient.getModel().getMothersMaidenName());
             txtPersonal13.setText(poClient.getModel().getTaxIdNumber());
             txtPersonal14.setText(poClient.getModel().getLTOClientId());
