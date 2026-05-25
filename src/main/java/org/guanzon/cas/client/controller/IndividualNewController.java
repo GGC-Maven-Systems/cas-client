@@ -704,7 +704,6 @@ public class IndividualNewController implements Initializable {
                     String lsTinPattern = "^\\d{3}-\\d{2}-\\d{4}$";
                     if (!lsValue.matches(lsTinPattern)) {
                         ShowMessageFX.Warning(getStage(), "TIN Number is invalid", "Warning", MODULE);
-                        txtField.requestFocus();
                         return;
                     }
 
@@ -729,7 +728,6 @@ public class IndividualNewController implements Initializable {
                     String lsNatlIDPattern = "^\\d{3}-\\d{2}-\\d{6}$";
                     if (!lsValue.matches(lsNatlIDPattern)) {
                         ShowMessageFX.Warning(getStage(), "National ID is invalid", "Warning", MODULE);
-                        txtField.requestFocus();
                         return;
                     }
 
@@ -1875,58 +1873,93 @@ public class IndividualNewController implements Initializable {
         return (Stage) AnchorMain.getScene().getWindow();
     }
 
-    private boolean isUpdating = false;
+    public static void applyMask(final String format,
+            final TextField textField) {
 
-    public void applyMask(final String format, final TextField textField) {
+        final boolean[] isUpdating = {false};
 
+        /*
+     * Backspace handling
+         */
         textField.setOnKeyPressed(event -> {
             if (event.getCode() == KeyCode.BACK_SPACE) {
                 int caret = textField.getCaretPosition();
                 String text = textField.getText();
                 if (caret > 0 && caret <= text.length()) {
                     if (text.charAt(caret - 1) == '-') {
-
                         int newPos = caret - 1;
-
                         StringBuilder sb = new StringBuilder(text);
-
                         sb.deleteCharAt(caret - 1);
-
                         if (newPos - 1 >= 0) {
                             sb.deleteCharAt(newPos - 1);
                             newPos--;
                         }
 
+                        isUpdating[0] = true;
                         textField.setText(formatText(sb.toString(), format));
                         textField.positionCaret(Math.max(newPos, 0));
+                        isUpdating[0] = false;
                         event.consume();
                     }
                 }
             }
         });
 
-        textField.textProperty().addListener((obs, oldValue, newValue) -> {
-            if (isUpdating) {
+        /*
+     * Realtime formatting
+         */
+        textField.textProperty().addListener((obs,
+                oldValue,
+                newValue) -> {
+
+            if (isUpdating[0]) {
                 return;
             }
-            isUpdating = true;
-            int caret = textField.getCaretPosition();
+
             String formatted = formatText(newValue, format);
-            textField.setText(formatted);
-            if (caret > formatted.length()) {
-                caret = formatted.length();
+
+            if (!formatted.equals(newValue)) {
+                int caret = textField.getCaretPosition();
+                isUpdating[0] = true;
+                textField.setText(formatted);
+
+                if (caret > formatted.length()) {
+                    caret = formatted.length();
+                }
+
+                textField.positionCaret(caret);
+
+                isUpdating[0] = false;
             }
-            textField.positionCaret(caret);
-            isUpdating = false;
+        });
+
+        /*
+     * Lost focus formatting
+     * ONLY THIS TEXTFIELD WILL TRIGGER
+         */
+        textField.focusedProperty().addListener((obs,
+                oldFocused,
+                newFocused) -> {
+            /*
+         * Trigger only when THIS field lost focus
+             */
+            if (oldFocused && !newFocused) {
+                String formatted = formatText(textField.getText(), format);
+                isUpdating[0] = true;
+                textField.setText(formatted);
+                isUpdating[0] = false;
+            }
         });
     }
 
-    private String formatText(String value, String format) {
+    private static String formatText(String value,
+            String format) {
 
         String digitsOnly = value.replaceAll("[^0-9]", "");
-        StringBuilder formatted = new StringBuilder();
-        int digitIndex = 0;
 
+        StringBuilder formatted = new StringBuilder();
+
+        int digitIndex = 0;
         for (int i = 0; i < format.length(); i++) {
             char maskChar = format.charAt(i);
             if (maskChar == 'X') {
@@ -1936,6 +1969,7 @@ public class IndividualNewController implements Initializable {
                 } else {
                     break;
                 }
+
             } else if (maskChar == '-') {
                 if (digitIndex > 0 && digitIndex < digitsOnly.length() + 1) {
                     formatted.append("-");
@@ -1969,7 +2003,7 @@ public class IndividualNewController implements Initializable {
         }
         StringBuilder sb = new StringBuilder();
         for (String word : s.trim().split("\\s+")) {
-            sb.append(    Character.toUpperCase(word.charAt(0))   + word.substring(1).toLowerCase()  ).append(" ");
+            sb.append(Character.toUpperCase(word.charAt(0)) + word.substring(1).toLowerCase()).append(" ");
         }
         return sb.toString().trim();
     }
