@@ -302,6 +302,34 @@ public class ClientInfo extends Parameter{
 
         return poJSON;
     }
+    public static String formatFullName(
+            String surname,
+            String firstName,
+            String suffix,
+            String middleName) {
+
+        return (cap(surname) + ", "
+                + cap(firstName)
+                + (isEmpty(suffix) ? "" : " " + cap(suffix))
+                + (isEmpty(middleName) ? "" : " " + cap(middleName)))
+                .replaceAll("\\s+", " ")
+                .trim();
+    }
+
+    private static boolean isEmpty(String s) {
+        return s == null || s.trim().isEmpty();
+    }
+
+    private static String cap(String s) {
+        if (isEmpty(s)) {
+            return "";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String word : s.trim().split("\\s+")) {
+            sb.append(    Character.toUpperCase(word.charAt(0))   + word.substring(1).toLowerCase()  ).append(" ");
+        }
+        return sb.toString().trim();
+    }
     
     public JSONObject openContactRecord(String Id, int fnRow) throws SQLException, GuanzonException, CloneNotSupportedException {
         if (!pbInitRec){
@@ -329,7 +357,7 @@ public class ClientInfo extends Parameter{
             String lsMidnme = poContactPerson.getModel().getMiddleName()== null ? "" : poContactPerson.getModel().getMiddleName();
             String lsSuffix = poContactPerson.getModel().getSuffixName()== null ? "" : poContactPerson.getModel().getSuffixName();
 
-            String lsfullname = poContactPerson.getModel().getCompanyName() == null ? "" : lsLastnme + ", " + lsFrstnme + " " + lsMidnme + " " + lsSuffix;
+            String lsfullname = poContactPerson.getModel().getCompanyName() == null ? "" : formatFullName(lsLastnme,lsFrstnme,lsSuffix,lsMidnme);
 
             loContact.setContactPersonName(lsfullname);
             
@@ -868,10 +896,10 @@ public class ClientInfo extends Parameter{
                     poJSON.put("message", "First name must not be empty.");
                     return poJSON;
                 }
-
-                String lsName = poClient.getLastName() + ", " + poClient.getFirstName() + " " + poClient.getSuffixName() + " " + poClient.getMiddleName();
+                
+                String lsName = formatFullName( poClient.getLastName(),poClient.getFirstName(),poClient.getSuffixName(),poClient.getMiddleName());
                 lsName = lsName.trim();
-
+            
                 poClient.setCompanyName(lsName);
                 
                 //remove empty mobile
