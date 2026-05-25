@@ -89,7 +89,7 @@ public class Account_Accreditation extends Parameter {
 
                     return poJSON;
                 }
-
+                
                 //if success, return approving officer user id
                 psApprovalUser = poJSON.get("sUserIDxx") != null
                         ? poJSON.get("sUserIDxx").toString()
@@ -97,6 +97,8 @@ public class Account_Accreditation extends Parameter {
 
                 //add approver's id to result
                 poJSON.put("sApproved", psApprovalUser);
+//                setApproving(psApprovalUser);
+                
             }
         }
 
@@ -644,11 +646,14 @@ public class Account_Accreditation extends Parameter {
 //                }
 //            }
         }
-
+        
+        if(psApprovalUser == null || "".equals(psApprovalUser)){
+            psApprovalUser = poGRider.getUserID();
+        }
+        
         String lsSQL = "UPDATE "
                 + poModel.getTable()
-                + " SET   cTranStat = " + SQLUtil.toSQL("1")
-                + ", sApproved= " + SQLUtil.toSQL(poGRider.getUserID())
+                + " SET sApproved= " + SQLUtil.toSQL(psApprovalUser)
                 + ", dApproved= " + SQLUtil.toSQL(poGRider.getServerDate())
                 + " WHERE sTransNox = " + SQLUtil.toSQL(getModel().getTransactionNo());
 
@@ -661,6 +666,12 @@ public class Account_Accreditation extends Parameter {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
             poJSON.put("message", "Error updating the transaction status.");
+            return poJSON;
+        }
+        
+        //change status
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", psValidStatus, false,true);
+        if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
 

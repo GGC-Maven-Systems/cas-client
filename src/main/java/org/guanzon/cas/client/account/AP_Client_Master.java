@@ -36,6 +36,11 @@ import org.guanzon.cas.client.model.Model_AP_Client_Master;
 import org.guanzon.cas.client.model.Model_AP_Client_Bank_Account;
 import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.client.validator.APClientValidatorFactory;
+import org.guanzon.cas.parameter.Banks;
+import org.guanzon.cas.parameter.model.Model_Company;
+import org.guanzon.cas.parameter.services.ParamControllers;
+import org.guanzon.cas.parameter.services.ParamModels;
+import org.guanzon.cas.purchasing.services.POController;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -46,20 +51,15 @@ public class AP_Client_Master extends Parameter {
     private static JSONObject token = null;
 
     private Model_AP_Client_Master poModel;
+    private Model_AP_Client_Bank_Account poBankAccount;
     
     private List<Model_AP_Client_Ledger> paLedger;
-    private List<Model_AP_Client_Bank_Account> paBankAccount;
     
     public List<TransactionAttachment> paAttachments;
 
     @SuppressWarnings("unchecked")
     public List<Model_AP_Client_Ledger> getLedgerList() {
         return (List<Model_AP_Client_Ledger>) (List<?>) paLedger;
-    }
-
-    @SuppressWarnings("unchecked")
-    public List<Model_AP_Client_Bank_Account> getBankAccountList() {
-        return (List<Model_AP_Client_Bank_Account>) (List<?>) paBankAccount;
     }
 
     @Override
@@ -71,6 +71,7 @@ public class AP_Client_Master extends Parameter {
 
         ClientModels model = new ClientModels(poGRider);
         poModel = model.APClientMaster();
+        poBankAccount = model.APClientBankAccount();
         
         paAttachments = new ArrayList<>();
     }
@@ -174,6 +175,23 @@ public class AP_Client_Master extends Parameter {
     protected JSONObject saveOthers() throws SQLException, GuanzonException {
         try {
             
+            //Save Bank Account
+            System.out.println("-----------------------------SAVE BANK ACCOUNT------------------------------------------");
+            if(poBankAccount != null){
+                if(poBankAccount.getEditMode() == EditMode.ADDNEW || poBankAccount.getEditMode() == EditMode.UPDATE){
+                    poBankAccount.setClientID(getModel().getClientId());
+                    poBankAccount.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+                    poBankAccount.setModifiedDate(poGRider.getServerDate());
+                    poBankAccount.setRecordStatus(RecordStatus.ACTIVE);
+                    poJSON = poBankAccount.saveRecord();
+                    if (!isJSONSuccess(poJSON)) {
+                        return poJSON;
+                    }
+                    
+                }
+            }
+            System.out.println("-----------------------------------------------------------------------");
+            
             //Save Attachments
                 System.out.println("-----------------------------SAVE TRANSACTION ATTACHMENT------------------------------------------");
             for (int lnCtr = 0; lnCtr <= getTransactionAttachmentCount() - 1; lnCtr++) {
@@ -207,23 +225,20 @@ public class AP_Client_Master extends Parameter {
     @Override
     public JSONObject searchRecord(String value, boolean byCode) throws SQLException, GuanzonException {
         String lsSQL = getSQ_Browse();
-
+        System.out.println("SQL : " + lsSQL);
         poJSON = ShowDialogFX.Search(poGRider,
                 lsSQL,
                 value,
                 "Client ID»Name»Address»Contact Person",
                 "sClientID»sCompnyNm»xAddressx»xContactP",
-                "a.sClientID»b.sCompnyNm»TRIM(CONCAT(c.sHouseNox, ', ', c.sAddressx, ', ', c.sBrgyIDxx, ', ', c.sTownIDxx))»d.sCPerson1",
+                "a.sClientID»IFNULL(b.sCompnyNm,'')»TRIM(CONCAT(c.sHouseNox, ', ', c.sAddressx, ', ', c.sBrgyIDxx, ', ', c.sTownIDxx))»d.sCPerson1",
                 byCode ? 0 : 1);
 
         if (poJSON != null) {
-            
             poJSON = poModel.openRecord((String) poJSON.get("sClientID"));
             if (poJSON.get("result").toString().equalsIgnoreCase("success")) {
-                
                 //clear retrieve ledger
                 paLedger.clear();
-
                 //if client tagged as confirmed supplier, get date approved and set as date for client since. else set server date
                 lsSQL = "SELECT " +
                         "* " +
@@ -231,9 +246,8 @@ public class AP_Client_Master extends Parameter {
                         "Account_Client_Accreditation";
 
                 lsSQL = MiscUtil.addCondition(lsSQL, 
-                                        "sClientID = " + SQLUtil.toSQL(poModel.getClientId()!= null ? poModel.getClientId(): "" + " ") +
-                                       "AND " +
-                                        "cTranStat = '1' "
+                                        " sClientID = " + SQLUtil.toSQL(poModel.getClientId()!= null ? poModel.getClientId(): "" + " ") +
+                                        " AND cTranStat = '1' "
                 );
 
                 lsSQL = lsSQL + 
@@ -349,6 +363,18 @@ public class AP_Client_Master extends Parameter {
 
         return loJSON;
     }
+    
+    public JSONObject searchBank(String fsValue, boolean fbByCode) throws SQLException, GuanzonException {
+        Banks loObject = new ParamControllers(poGRider, logwrapr).Banks();
+        loObject.initialize();
+        loObject.setRecordStatus(RecordStatus.ACTIVE);
+        poJSON = loObject.searchRecord(fsValue, fbByCode);
+        if (isJSONSuccess(poJSON)) {
+           poJSON = BankAccount().setBankID(loObject.getModel().getBankID());
+        }
+
+        return poJSON;
+    }
 
     public JSONObject searchCategory(String fsValue, boolean fbByCode) throws SQLException, GuanzonException {
         JSONObject loJSON;
@@ -384,10 +410,9 @@ public class AP_Client_Master extends Parameter {
         return loJSON;
     }
 
-    public JSONObject loadLedgerList() throws SQLException, GuanzonException, CloneNotSupportedException {
-
-        if (getModel().getClientId() == null
-                || getModel().getClientId().isEmpty()) {
+    public JSONObject loadLedgerList(String fsDateFrom, String fsDateTo) throws SQLException, GuanzonException, CloneNotSupportedException {
+        poJSON = new JSONObject();
+        if (getModel().getClientId() == null || "".equals(getModel().getClientId())) {
             poJSON.put("result", "error");
             poJSON.put("message", "No record Loaded. Please load Client");
             return poJSON;
@@ -399,27 +424,25 @@ public class AP_Client_Master extends Parameter {
                 + ", b.dTransact"
                 + " FROM AP_Client_Master a "
                 + " LEFT JOIN AP_Client_Ledger b ON a.sClientID = b.sClientID "
-                + " ORDER BY b.nLedgerNo";
+                + " ORDER BY b.dTransact ASC";
 
-        lsSQL = MiscUtil.addCondition(lsSQL, "a.sClientID=" + SQLUtil.toSQL(getModel().getClientId()));
+        lsSQL = MiscUtil.addCondition(lsSQL, " a.sClientID =" + SQLUtil.toSQL(getModel().getClientId())
+                                            + " AND b.dTransact BETWEEN " + SQLUtil.toSQL(fsDateFrom)
+                                            + " AND " + SQLUtil.toSQL(fsDateTo)
+                                                );
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         System.out.println("Load list query is " + lsSQL);
 
-        if (MiscUtil.RecordCount(loRS)
-                <= 0) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No record found.");
-            return poJSON;
-        }
-
-        while (loRS.next()) {
-            Model_AP_Client_Ledger loLedger = new ClientModels(poGRider).APClientLedger();
-            poJSON = loLedger.openRecord(loRS.getString("sClientID"), loRS.getString("nLedgerNo"));
-
-            if ("success".equals((String) poJSON.get("result"))) {
-                paLedger.add(loLedger);
-            } else {
-                return poJSON;
+        if (MiscUtil.RecordCount(loRS) <= 0) {
+        } else {
+            while (loRS.next()) {
+                Model_AP_Client_Ledger loLedger = new ClientModels(poGRider).APClientLedger();
+                poJSON = loLedger.openRecord(loRS.getString("sClientID"), loRS.getString("nLedgerNo"));
+                if ("success".equals((String) poJSON.get("result"))) {
+                    paLedger.add(loLedger);
+                } else {
+                    return poJSON;
+                }
             }
         }
 
@@ -427,40 +450,56 @@ public class AP_Client_Master extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
+    
+    
+    public Model_AP_Client_Bank_Account BankAccount(){
+        if (poBankAccount == null) {
+            poBankAccount = new ClientModels(poGRider).APClientBankAccount();
+            poBankAccount.initialize();
+        }
+        return poBankAccount;
+    }
 
-    public JSONObject loadBankAccountList() throws SQLException, GuanzonException, CloneNotSupportedException {
-
-        if (getModel().getClientId() == null
-                || getModel().getClientId().isEmpty()) {
+    public JSONObject loadBankAccount() throws SQLException, GuanzonException, CloneNotSupportedException {
+        poJSON = new JSONObject();
+        if (getModel().getClientId() == null || "".equals(getModel().getClientId())) {
             poJSON.put("result", "error");
             poJSON.put("message", "No record Loaded. Please load Client");
             return poJSON;
         }
-        paLedger.clear();
-        String lsSQL = "SELECT *"
-                + " a.sAPBnkIDx"
-                + " FROM AP_Client_Bank_Account a "
-                + " ORDER BY b.sAPBnkIDx";
+        
+        if(poBankAccount == null || getEditMode() == EditMode.READY){
+            poBankAccount = new ClientModels(poGRider).APClientBankAccount();
+            poBankAccount.initialize();
+        }
+        
+        String lsSQL = "SELECT "
+                + " sAPBnkIDx"
+                + " FROM AP_Client_Bank_Account "
+                + " ORDER BY sAPBnkIDx";
 
-        lsSQL = MiscUtil.addCondition(lsSQL, "a.sClientID=" + SQLUtil.toSQL(getModel().getClientId()));
+        lsSQL = MiscUtil.addCondition(lsSQL, " sClientID = " + SQLUtil.toSQL(getModel().getClientId()));
         ResultSet loRS = poGRider.executeQuery(lsSQL);
         System.out.println("Load list query is " + lsSQL);
 
-        if (MiscUtil.RecordCount(loRS)
-                <= 0) {
-            poJSON.put("result", "error");
-            poJSON.put("message", "No record found.");
-            return poJSON;
+        if (MiscUtil.RecordCount(loRS) <= 0) {
+            poJSON = poBankAccount.newRecord();
+            if (!"success".equals((String) poJSON.get("result"))) {
+                return poJSON;
+            }
         }
 
-        while (loRS.next()) {
-            Model_AP_Client_Bank_Account loBank = new ClientModels(poGRider).APClientBankAccount();
-            poJSON = loBank.openRecord(loRS.getString("sAPBnkIDx"));
-
-            if ("success".equals((String) poJSON.get("result"))) {
-                paBankAccount.add(loBank);
-            } else {
+        if(loRS.next()) {
+            poJSON = poBankAccount.openRecord(loRS.getString("sAPBnkIDx"));
+            if (!"success".equals((String) poJSON.get("result"))) {
                 return poJSON;
+            }
+            
+            if(getEditMode() == EditMode.UPDATE && poBankAccount.getEditMode() != EditMode.UPDATE){
+                poJSON = poBankAccount.updateRecord();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    return poJSON;
+                }
             }
         }
 
@@ -827,6 +866,14 @@ public class AP_Client_Master extends Parameter {
         } catch (ParseException ex) {
             return null;
         }
+    }
+    
+    public String getCompany() throws SQLException, GuanzonException{
+        Model_Company loObject = new ParamModels(poGRider).Company();
+        loObject.initialize();
+        loObject.openRecord(poGRider.getCompnyId());
+        
+        return loObject.getCompanyName();
     }
     
     /**

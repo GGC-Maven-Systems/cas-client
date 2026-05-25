@@ -123,8 +123,16 @@ public class Model_AP_Client_Bank_Account extends Model  {
         return (String) getValue("cRecdStat");
     }
 
+    public JSONObject setModifyingId(String ModifyingId) {
+        return setValue("sModified", ModifyingId);
+    }
+    
     public String getModifyingId() {
         return (String) getValue("sModified");
+    }
+    
+    public JSONObject setModifiedDate(Date modifiedDate) {
+        return setValue("dModified", modifiedDate);
     }
 
     public Date getModifiedDate() {

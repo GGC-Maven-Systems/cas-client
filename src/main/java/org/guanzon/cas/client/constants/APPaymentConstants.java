@@ -16,7 +16,7 @@ public class APPaymentConstants {
     public static final ObservableList<String> regstrList = FXCollections.observableArrayList(
         "Non Vatable",
         "Vat Registered",
-        "BIR Registered to Supplier"
+        "Not-BIR Registered and Special Supplier"
     );
     
     public static final ObservableList<String> paymentList = FXCollections.observableArrayList(
