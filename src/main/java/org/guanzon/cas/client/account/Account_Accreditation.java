@@ -672,6 +672,7 @@ public class Account_Accreditation extends Parameter {
         //change status
         poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", psValidStatus, false,true);
         if (!"success".equals((String) poJSON.get("result"))) {
+            poGRider.rollbackTrans();
             return poJSON;
         }
 
