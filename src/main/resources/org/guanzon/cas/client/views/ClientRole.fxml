@@ -87,7 +87,7 @@
                      <children>
                         <HBox AnchorPane.bottomAnchor="5.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="5.0">
                            <children>
-                              <Button fx:id="btnSave" ellipsisString="" graphicTextGap="7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@../css/StyleSheet.css" text="Okay" HBox.hgrow="ALWAYS">
+                              <Button fx:id="btnSave" ellipsisString="" graphicTextGap="7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@StyleSheet.css" text="Okay" HBox.hgrow="ALWAYS">
                                  <graphic>
                                     <FontAwesomeIconView glyphName="SAVE" size="20" />
                                  </graphic>
@@ -98,9 +98,9 @@
                                     <Insets left="5.0" />
                                  </HBox.margin>
                               </Button>
-                              <Button fx:id="btnCancel" ellipsisString="" graphicTextGap="7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@../css/StyleSheet.css" text="Cancel" HBox.hgrow="ALWAYS">
+                              <Button fx:id="btnCancel" ellipsisString="" graphicTextGap="7.0" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@StyleSheet.css" text="Cancel" HBox.hgrow="ALWAYS">
                                  <graphic>
-                                    <FontAwesomeIconView glyphName="SAVE" size="20" />
+                                    <FontAwesomeIconView glyphName="CLOSE" size="20" />
                                  </graphic>
                                  <effect>
                                     <Blend />
