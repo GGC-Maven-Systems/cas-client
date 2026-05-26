@@ -860,13 +860,58 @@ public class IndividualNewController implements Initializable {
         if (!nv) { //lost focus
             switch (lnIndex) {
                 case 1: //mobile
-                    if (!StringHelper.isNumeric(lsValue)) {
+                    
+                    String lsContactNo = lsValue == null
+                        ? ""
+                        : lsValue.replaceAll("[\\s()-]", "").trim();
+                    if (!StringHelper.isNumeric(lsContactNo) && !lsValue.isEmpty()) {
                         ShowMessageFX.Warning(getStage(), "Mobile must be numeric.", "Warning", MODULE);
                         return;
-                    } else if (!lsValue.trim().matches("^(09\\d{9}|\\+639\\d{9})$")) {
-                        ShowMessageFX.Warning(getStage(), "Mobile number is invalid", "Warning", MODULE);
-                        return;
+//                    } else if (!lsValue.trim().matches("^(09\\d{9}|\\+639\\d{9})$") && !lsValue.isEmpty()) {
+//                        ShowMessageFX.Warning(getStage(), "Mobile number is invalid", "Warning", MODULE);
+//                        return; //Replace by script below to accept contact number for telephone or fax
                     } else {
+                        if (!lsContactNo.isEmpty()) {
+                            boolean isValid = false;
+                            String lsMessage = "";
+                            switch (poClient.Mobile(pnMobile).getMobileType()) {
+                                // Mobile Number
+                                case "0":
+                                    isValid = lsContactNo.matches("^(09\\d{9}|\\+639\\d{9})$");
+                                    lsMessage = "Please enter a valid mobile number.";
+                                    break;
+                                // Telephone
+                                case "1":
+                                    isValid = lsContactNo.matches("^(\\+63|0)?\\d{1,3}\\d{6,8}$");
+                                    lsMessage = "Please enter a valid telephone number.";
+                                    break;
+                                // Fax
+                                case "2":
+                                    isValid = lsContactNo.matches("^(\\+63|0)?\\d{1,3}\\d{6,8}$");
+                                    lsMessage = "Please enter a valid fax number.";
+                                    break;
+                                default:
+                                    lsMessage = "Invalid contact number.";
+                                    ShowMessageFX.Warning(
+                                            getStage(),
+                                            "Unknown contact type.",
+                                            "Warning",
+                                            MODULE
+                                    );
+                                    return;
+                            }
+
+                            if (!isValid) {
+                                ShowMessageFX.Warning(
+                                        getStage(),
+                                        lsMessage,
+                                        "Warning",
+                                        MODULE
+                                );
+                                return;
+                            }
+                        }
+                        
                         poJSON = poClient.Mobile(pnMobile).setMobileNo(lsValue);
 
                         if (!"success".equals((String) poJSON.get("result"))) {
