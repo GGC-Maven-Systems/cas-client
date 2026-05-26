@@ -357,6 +357,7 @@ public class AP_Client_Master extends Parameter {
             loJSON.put("result", "success");
             getModel().setTermId((String) loJSON.get("sTermCode"));
         } else {
+            loJSON = new JSONObject();
             loJSON.put("result", "success");
             loJSON.put("message", "No record selected.");
         }
@@ -403,6 +404,7 @@ public class AP_Client_Master extends Parameter {
             loJSON.put("result", "success");
             getModel().setCategoryCode((String) loJSON.get("sCategrCd"));
         } else {
+            loJSON = new JSONObject();
             loJSON.put("result", "success");
             loJSON.put("message", "No record selected.");
         }
