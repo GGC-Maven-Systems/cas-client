@@ -1110,9 +1110,7 @@ public class IndividualNewController implements Initializable {
         txtPersonal08.setOnKeyPressed(this::txtPersonal_KeyPressed);
         txtPersonal11.setOnKeyPressed(this::txtPersonal_KeyPressed);
         txtPersonal12.setOnKeyPressed(this::txtPersonal_KeyPressed);
-        txtPersonal13.setOnKeyPressed(this::txtPersonal_KeyPressed);
         txtPersonal14.setOnKeyPressed(this::txtPersonal_KeyPressed);
-        txtPersonal15.setOnKeyPressed(this::txtPersonal_KeyPressed);
 
         txtAddress01.focusedProperty().addListener(txtAddress_Focus);
         txtAddress02.focusedProperty().addListener(txtAddress_Focus);
