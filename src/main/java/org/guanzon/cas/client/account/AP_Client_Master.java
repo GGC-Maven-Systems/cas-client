@@ -102,10 +102,54 @@ public class AP_Client_Master extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
+    
+    private boolean lbValidate = false;
+    public void validateEntry(boolean fbValidate){
+        lbValidate = fbValidate;
+    }
 
     @Override
     protected JSONObject willSave() throws SQLException, GuanzonException {
-
+        poJSON = new JSONObject();
+        if(lbValidate){
+            if(poModel.getTermId() == null || "".equals(poModel.getTermId())){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Term cannot be empty.");
+                return poJSON;
+            }
+            if(poModel.getPayment() == null || "".equals(poModel.getPayment())){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Payment type cannot be empty.");
+                return poJSON;
+            }
+        }
+        
+        System.out.println("-----------------------------VALIDATE BANK ACCOUNT------------------------------------------");
+        if(poBankAccount != null && lbValidate){
+            if(poBankAccount.getEditMode() == EditMode.ADDNEW || poBankAccount.getEditMode() == EditMode.UPDATE){
+                if(poBankAccount.getBankID() == null || "".equals(poBankAccount.getBankID())){
+                    if((poBankAccount.getAccountNumber() != null && !"".equals(poBankAccount.getAccountNumber()))
+                        || (poBankAccount.getAccountName() != null && !"".equals(poBankAccount.getAccountName()))){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Bank cannot be empty.");
+                        return poJSON;
+                    }
+                } else {
+                    if(poBankAccount.getAccountNumber() == null || "".equals(poBankAccount.getAccountNumber())){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Account number cannot be empty.");
+                        return poJSON;
+                    }
+                    if(poBankAccount.getAccountName() == null || "".equals(poBankAccount.getAccountName())){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Account name cannot be empty.");
+                        return poJSON;
+                    }
+                }
+                
+            }
+        }
+        System.out.println("-----------------------------------------------------------------------");
         //assign other info on attachment
         for (int lnCtr = 0; lnCtr <= getTransactionAttachmentCount()- 1; lnCtr++) {
             TransactionAttachmentList(lnCtr).getModel().setSourceNo(poModel.getClientId());
@@ -179,15 +223,18 @@ public class AP_Client_Master extends Parameter {
             System.out.println("-----------------------------SAVE BANK ACCOUNT------------------------------------------");
             if(poBankAccount != null){
                 if(poBankAccount.getEditMode() == EditMode.ADDNEW || poBankAccount.getEditMode() == EditMode.UPDATE){
-                    poBankAccount.setClientID(getModel().getClientId());
-                    poBankAccount.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
-                    poBankAccount.setModifiedDate(poGRider.getServerDate());
-                    poBankAccount.setRecordStatus(RecordStatus.ACTIVE);
-                    poJSON = poBankAccount.saveRecord();
-                    if (!isJSONSuccess(poJSON)) {
-                        return poJSON;
+                    if(poBankAccount.getBankID() != null && !"".equals(poBankAccount.getBankID())
+                        && (poBankAccount.getAccountNumber() != null && !"".equals(poBankAccount.getAccountNumber()))
+                        && (poBankAccount.getAccountName() != null && !"".equals(poBankAccount.getAccountName()))){
+                            poBankAccount.setClientID(getModel().getClientId());
+                            poBankAccount.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+                            poBankAccount.setModifiedDate(poGRider.getServerDate());
+                            poBankAccount.setRecordStatus(RecordStatus.ACTIVE);
+                            poJSON = poBankAccount.saveRecord();
+                            if (!isJSONSuccess(poJSON)) {
+                                return poJSON;
+                            }
                     }
-                    
                 }
             }
             System.out.println("-----------------------------------------------------------------------");
