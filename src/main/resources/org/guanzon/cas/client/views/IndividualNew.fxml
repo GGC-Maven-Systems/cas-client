@@ -511,7 +511,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for address" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -593,7 +593,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for contact number" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -709,7 +709,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" text="" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for email address" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -820,7 +820,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for social media" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />

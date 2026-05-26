@@ -1272,7 +1272,7 @@ public class InstitutionNewController implements Initializable {
     }
 
     private void addContactRole() throws Exception {
-        String lsRoleId = poClient.InstiContact(pnContactPerson).getsRoleIDxx();
+//        String lsRoleId = poClient.InstiContact(pnContactPerson).getsRoleIDxx();
         //initialize Client GUI
         ClientGUI loClient = new ClientGUI();
 
@@ -1287,7 +1287,7 @@ public class InstitutionNewController implements Initializable {
         loClient.setByCode(false);
 
         //initialize empty role to create new entry, else, load role id
-        loClient.setRoleID(lsRoleId);
+        loClient.setRoleID("");
 
         // Get screen bounds
         Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();

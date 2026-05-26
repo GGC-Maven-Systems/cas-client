@@ -200,7 +200,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for address" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -381,9 +381,6 @@
                                                                                        <graphic>
                                                                                           <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                                        </graphic>
-                                                                                       <tooltip>
-                                                                                          <Tooltip text="ADD ADDRESS" />
-                                                                                       </tooltip>
                                                                                     </Button>
                                                                                     <TextField fx:id="txtContact08" minWidth="150.0" promptText="Press F3: Search" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2">
                                                                                        <GridPane.margin>
@@ -394,9 +391,6 @@
                                                                                        <graphic>
                                                                                           <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                                        </graphic>
-                                                                                       <tooltip>
-                                                                                          <Tooltip text="ADD ADDRESS" />
-                                                                                       </tooltip>
                                                                                     </Button>
                                                                                     <TextField fx:id="txtContact02" editable="false" minWidth="150.0" prefHeight="30.0" prefWidth="175.0" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="4">
                                                                                        <GridPane.margin>
@@ -444,7 +438,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for contact person" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
