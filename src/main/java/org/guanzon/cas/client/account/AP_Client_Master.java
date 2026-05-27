@@ -269,6 +269,55 @@ public class AP_Client_Master extends Parameter {
         poJSON.put("result", "success");
         return poJSON;
     }
+    
+    public String getFullAddress() throws SQLException, GuanzonException{
+        String lsHouseNo = poModel.ClientAddress().getHouseNo() == null || poModel.ClientAddress().getHouseNo().isEmpty() ? "" : poModel.ClientAddress().getHouseNo();
+        String lsAddress = poModel.ClientAddress().getAddress() == null || poModel.ClientAddress().getAddress().isEmpty() ? "" : poModel.ClientAddress().getAddress();
+        String lsBrgy = poModel.ClientAddress().Barangay().getBarangayName() == null || poModel.ClientAddress().Barangay().getBarangayName().isEmpty() ? "" : poModel.ClientAddress().Barangay().getBarangayName();
+        String lsTown = poModel.ClientAddress().Town().getDescription() == null || poModel.ClientAddress().Town().getDescription().isEmpty() ? "" : poModel.ClientAddress().Town().getDescription();
+        String lsProvince = poModel.ClientAddress().Town().Province().getDescription() == null || poModel.ClientAddress().Town().Province().getDescription().isEmpty() ? "" : poModel.ClientAddress().Town().Province().getDescription();
+        
+        String lsFullAddress = "";
+        if(!lsHouseNo.isEmpty()){
+            lsFullAddress = lsHouseNo;
+        }
+        if(!lsAddress.isEmpty()){
+            if(!lsFullAddress.isEmpty()){
+                lsFullAddress = lsFullAddress + " " + lsAddress;
+            } else {
+                lsFullAddress = lsAddress;
+            }
+        }
+        if(!lsBrgy.isEmpty()){
+            if(!lsFullAddress.isEmpty()){
+                lsFullAddress = lsFullAddress + " " + lsBrgy;
+            } else {
+                lsFullAddress = lsBrgy;
+            }
+        }
+        if(!lsTown.isEmpty()){
+            if(!lsFullAddress.isEmpty()){
+                lsFullAddress = lsFullAddress + " " + lsTown;
+            } else {
+                lsFullAddress = lsTown;
+            }
+        }
+        if(!lsProvince.isEmpty()){
+            if(!lsFullAddress.isEmpty()){
+                lsFullAddress = lsFullAddress + ", " + lsProvince;
+            } else {
+                lsFullAddress = lsProvince;
+            }
+        }
+        
+        if(lsFullAddress == null){
+            lsFullAddress = "";
+        } else {
+            lsFullAddress = lsFullAddress.trim();
+        }
+        System.out.println("Full Address : " + lsFullAddress);
+        return lsFullAddress;
+    }
 
     @Override
     public Model_AP_Client_Master getModel() {

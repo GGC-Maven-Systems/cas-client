@@ -74,7 +74,7 @@ public class Account_Accreditation extends Parameter {
         }
         
         //if validator requires approval
-        if(!AccountAccreditationStatus.OPEN.equals(poModel.getRecordStatus())){
+        if(!AccountAccreditationStatus.OPEN.equals(poModel.getRecordStatus()) || !AccountAccreditationStatus.OPEN.equals(psValidStatus)){
             if (poJSON.containsKey("isRequiredApproval") && Boolean.TRUE.equals(poJSON.get("isRequiredApproval"))) {
 
                 //get approval from approving officer
@@ -562,8 +562,8 @@ public class Account_Accreditation extends Parameter {
                         poGRider.rollbackTrans();
                         return poJSON;
                     }
-                    object.setAPClientID(getModel().getClientId());
-                    object.setClientID(loClient.InstiContact(lnCtr).getContactPId()); 
+                    object.setAPClientID(getModel().getClientId()); //Supplie Client ID
+                    object.setClientID(loClient.InstiContact(lnCtr).getcCPrsonID());  //Contact Person Client ID
                     object.setPayeeName(loClient.InstiContact(lnCtr).getContactPersonName().trim());
                     object.setModifiedDate(poGRider.getServerDate());
                     object.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
