@@ -864,11 +864,12 @@ public class InstitutionNewController implements Initializable {
                             (String) poClient.Address(lnCtr).getAddress(),
                             (String) poClient.Address(lnCtr).Town().getDescription(),
                             (String) poClient.Address(lnCtr).Barangay().getBarangayName()));
-
+                    
+                    //comment aldrich 5/27/2026 , conflicting to if 1 remaining item is inactive, then its primary must be false
                     //set primary address the first item, only if size is 1
-                    if (poClient.getAddressCount() == 1 && lnCtr == 0) {
-                        poClient.Address(0).isPrimaryAddress(true);
-                    }
+//                    if (poClient.getAddressCount() == 1 && lnCtr == 0) {
+//                        poClient.Address(0).isPrimaryAddress(true);
+//                    }
                 }
             }
             loadMasterAddress();
@@ -959,11 +960,11 @@ public class InstitutionNewController implements Initializable {
                             poClient.InstiContact(lnCtr).ContactRole().getsRoleDesc(),
                             poClient.InstiContact(lnCtr).getRecordStatus().equalsIgnoreCase("0") ? "Inactive" : "Active"
                     ));
-
-                    //set primary address the first item, only if size is 1
-                    if (poClient.getInstiContactCount() == 1 && lnCtr == 0) {
-                        poClient.InstiContact(0).isPrimaryContactPersion(true);
-                    }
+                    //comment aldrich 5/27/2026 , conflicting to if 1 remaining item is inactive, then its primary must be false
+                    //set primary contact the first item, only if size is 1
+//                    if (poClient.getInstiContactCount() == 1 && lnCtr == 0) {
+//                        poClient.InstiContact(0).isPrimaryContactPersion(true);
+//                    }
                 }
             }
             if (pnContactPerson < 0 || pnContactPerson >= contactPerson_data.size()) {
@@ -1062,16 +1063,26 @@ public class InstitutionNewController implements Initializable {
                     try {
                         int number = Integer.parseInt(numberPart);
                         switch (number) {
-                            case 1: //
+                            case 1: // Active
                                 loJSON = poClient.Address(pnCompany).setRecordStatus(newValue ? "1" : "0");
                                 if ("error".equals((String) loJSON.get("result"))) {
                                     Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (!checkbox.isSelected()) {
+                                        poClient.Address(pnCompany).isPrimaryAddress(false);
+                                    }
                                 }
                                 getSelectedAddress();
                                 break;
                             case 2: // Primary Address || Restricted to 1 Primary Address
-                                poClient.Address(pnCompany).isPrimaryAddress(newValue);
-
+                                loJSON = poClient.Address(pnCompany).isPrimaryAddress(newValue);
+                                if ("error".equals((String) loJSON.get("result"))) {
+                                    Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (checkbox.isSelected()) {
+                                        poClient.Address(pnCompany).setRecordStatus("1");
+                                    }
+                                }
                                 //initialize full primary address to client master
                                 String lshouseno = poClient.Address(pnCompany).getHouseNo() == null || poClient.Address(pnCompany).getHouseNo().isEmpty() ? "" : poClient.Address(pnCompany).getHouseNo() + " ";
                                 String lsaddress = poClient.Address(pnCompany).getAddress() == null || poClient.Address(pnCompany).getAddress().isEmpty() ? "" : poClient.Address(pnCompany).getAddress();
@@ -1143,6 +1154,10 @@ public class InstitutionNewController implements Initializable {
                                 loJSON = poClient.InstiContact(pnContactPerson).setRecordStatus(checkbox.isSelected() ? "1" : "0");
                                 if ("error".equals((String) loJSON.get("result"))) {
                                     Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (!checkbox.isSelected()) {
+                                        poClient.InstiContact(pnContactPerson).isPrimaryContactPersion(false);
+                                    }
                                 }
                                 loadContactPerson();
                                 break;
@@ -1151,6 +1166,10 @@ public class InstitutionNewController implements Initializable {
                                 loJSON = poClient.InstiContact(pnContactPerson).isPrimaryContactPersion(checkbox.isSelected() ? true : false);
                                 if ("error".equals((String) loJSON.get("result"))) {
                                     Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (checkbox.isSelected()) {
+                                        poClient.InstiContact(pnContactPerson).setRecordStatus("1");
+                                    }
                                 }
 
                                 if (!pbLoadingData) {
@@ -1160,6 +1179,7 @@ public class InstitutionNewController implements Initializable {
                                         }
                                     }
                                 }
+                                loadContactPerson();
                                 break;
 
                             default:

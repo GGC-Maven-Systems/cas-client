@@ -808,8 +808,8 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(String.valueOf(poClient.Address(pnAddress).getLongitude()));
                     break;
                 case 3: //province
-                    if(lsValue.isEmpty() && poClient.Address(pnAddress).getEditMode() == EditMode.ADDNEW){
-                        try{
+                    if (lsValue.isEmpty() && poClient.Address(pnAddress).getEditMode() == EditMode.ADDNEW) {
+                        try {
                             poClient.Address(pnAddress).setTownId("");
                             poClient.Address(pnAddress).setBarangayId("");
                             //Reset town model
@@ -820,8 +820,8 @@ public class IndividualNewController implements Initializable {
                     }
                     break;
                 case 4: //town
-                    if(lsValue.isEmpty() && poClient.Address(pnAddress).getEditMode() == EditMode.ADDNEW){
-                        try{
+                    if (lsValue.isEmpty() && poClient.Address(pnAddress).getEditMode() == EditMode.ADDNEW) {
+                        try {
                             poClient.Address(pnAddress).setBarangayId("");
                             poClient.Address(pnAddress).setTownId("");
                             poClient.Address(pnAddress).Town().setTownId("");
@@ -832,7 +832,7 @@ public class IndividualNewController implements Initializable {
                     }
                     break;
                 case 5: //brgy
-                    if(lsValue.isEmpty() && poClient.Address(pnAddress).getEditMode() == EditMode.ADDNEW){
+                    if (lsValue.isEmpty() && poClient.Address(pnAddress).getEditMode() == EditMode.ADDNEW) {
                         poClient.Address(pnAddress).setBarangayId("");
                     }
                     break;
@@ -860,10 +860,10 @@ public class IndividualNewController implements Initializable {
         if (!nv) { //lost focus
             switch (lnIndex) {
                 case 1: //mobile
-                    
+
                     String lsContactNo = lsValue == null
-                        ? ""
-                        : lsValue.replaceAll("[\\s()-]", "").trim();
+                            ? ""
+                            : lsValue.replaceAll("[\\s()-]", "").trim();
                     if (!StringHelper.isNumeric(lsContactNo) && !lsValue.isEmpty()) {
                         ShowMessageFX.Warning(getStage(), "Mobile must be numeric.", "Warning", MODULE);
                         return;
@@ -911,7 +911,7 @@ public class IndividualNewController implements Initializable {
                                 return;
                             }
                         }
-                        
+
                         poJSON = poClient.Mobile(pnMobile).setMobileNo(lsValue);
 
                         if (!"success".equals((String) poJSON.get("result"))) {
@@ -1451,7 +1451,7 @@ public class IndividualNewController implements Initializable {
                             (String) poClient.Address(lnCtr).Barangay().getBarangayName()));
                 }
             }
-            
+
             loadMasterAddress();
 
             if (pnAddress < 0 || pnAddress >= address_data.size()) {
@@ -1486,7 +1486,7 @@ public class IndividualNewController implements Initializable {
 //                        + poClient.Address(i).Town().Province().getDescription();
 //
 //                txtField03.setText(address.trim());
-                
+
                 txtField03.setText(poClient.getFullAddress(i));
                 primaryAddressExists = true; // Mark as found
                 break; // Exit the loop since a primary address is found
@@ -1756,16 +1756,26 @@ public class IndividualNewController implements Initializable {
                     try {
                         int number = Integer.parseInt(numberPart);
                         switch (number) {
-                            case 1: //
+                            case 1: // Active
                                 loJSON = poClient.Address(pnAddress).setRecordStatus(newValue ? "1" : "0");
                                 if ("error".equals((String) loJSON.get("result"))) {
                                     Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (!checkbox.isSelected()) {
+                                        poClient.Address(pnAddress).isPrimaryAddress(false);
+                                    }
                                 }
                                 getSelectedAddress();
                                 break;
                             case 2: // Primary Address || Restricted to 1 Primary Address
-                                poClient.Address(pnAddress).isPrimaryAddress(newValue);
-
+                                loJSON = poClient.Address(pnAddress).isPrimaryAddress(newValue);
+                                if ("error".equals((String) loJSON.get("result"))) {
+                                    Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (checkbox.isSelected()) {
+                                        poClient.Address(pnAddress).setRecordStatus("1");
+                                    }
+                                }
                                 if (!pbLoadingData) {
                                     for (int in = 0; in < poClient.getAddressCount(); in++) {
                                         if (in != pnAddress) {
@@ -1773,7 +1783,7 @@ public class IndividualNewController implements Initializable {
                                         }
                                     }
                                 }
-                                
+
                                 loadRecordAddress();
                                 break;
                             case 3: //Office
@@ -1845,11 +1855,22 @@ public class IndividualNewController implements Initializable {
                                 loJSON = poClient.Mobile(pnMobile).setRecordStatus(checkbox.isSelected() ? "1" : "0");
                                 if ("error".equals((String) loJSON.get("result"))) {
                                     Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (!checkbox.isSelected()) {
+                                        poClient.Mobile(pnMobile).isPrimaryMobile(false);
+                                    }
                                 }
+                                loadRecordMobile();
                                 break;
                             case 2: // Primary Address || Restricted to 1 Primary Address
-                                poClient.Mobile(pnMobile).isPrimaryMobile(newValue);
-
+                                loJSON = poClient.Mobile(pnMobile).isPrimaryMobile(newValue);
+                                if ("error".equals((String) loJSON.get("result"))) {
+                                    Assert.fail((String) loJSON.get("message"));
+                                } else {
+                                    if (checkbox.isSelected()) {
+                                        poClient.Mobile(pnMobile).setRecordStatus("1");
+                                    }
+                                }
                                 if (!pbLoadingData) {
                                     for (int in = 0; in < poClient.getMobileCount(); in++) {
                                         if (in != pnMobile) {
@@ -1857,6 +1878,7 @@ public class IndividualNewController implements Initializable {
                                         }
                                     }
                                 }
+                                loadRecordMobile();
                                 break;
                             default:
                                 System.out.println("Unknown checkbox selected");
@@ -1888,16 +1910,26 @@ public class IndividualNewController implements Initializable {
                         int number = Integer.parseInt(numberPart);
 
                         switch (number) {
-                            case 1:
+                            case 1: //Active
                                 poJSON = poClient.Mail(pnEmail).setRecordStatus(checkbox.isSelected() ? "1" : "0");
-
                                 if ("error".equals((String) poJSON.get("result"))) {
                                     Assert.fail((String) poJSON.get("message"));
+                                } else {
+                                    if (!checkbox.isSelected()) {
+                                        poClient.Mail(pnEmail).isPrimaryEmail(false);
+                                    }
                                 }
+                                loadRecordMobile();
                                 break;
                             case 2: // Primary Email
-                                poClient.Mail(pnEmail).isPrimaryEmail(newValue);
-
+                                poJSON = poClient.Mail(pnEmail).isPrimaryEmail(newValue);
+                                if ("error".equals((String) poJSON.get("result"))) {
+                                    Assert.fail((String) poJSON.get("message"));
+                                } else {
+                                    if (checkbox.isSelected()) {
+                                        poClient.Mail(pnEmail).setRecordStatus("1");
+                                    }
+                                }
                                 if (!pbLoadingData) {
                                     for (int in = 0; in < poClient.getMailCount(); in++) {
                                         if (in != pnEmail) {
@@ -1905,6 +1937,7 @@ public class IndividualNewController implements Initializable {
                                         }
                                     }
                                 }
+                                loadRecordMobile();
                                 break;
                             default:
                                 System.out.println("Unknown checkbox selected");
