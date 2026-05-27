@@ -233,7 +233,8 @@ public class Account_Accreditation extends Parameter {
             loJSON.put("result", "success");
             getModel().setCategoryCode((String) loJSON.get("sCategrCd"));
         } else {
-            loJSON.put("result", "success");
+            loJSON = new JSONObject();
+            loJSON.put("result", "error");
             loJSON.put("message", "No record selected.");
         }
 
@@ -259,6 +260,9 @@ public class Account_Accreditation extends Parameter {
                 fbByCode ? 0 : 1);
 
         if (loJSON == null) {
+            loJSON = new JSONObject();
+            loJSON.put("result", "error");
+            loJSON.put("message", "No record selected.");
             return loJSON;
         }else{
             if ("error".equals(loJSON.get("result"))) {

@@ -461,7 +461,7 @@ public class AP_Client_Master extends Parameter {
             getModel().setTermId((String) loJSON.get("sTermCode"));
         } else {
             loJSON = new JSONObject();
-            loJSON.put("result", "success");
+            loJSON.put("result", "error");
             loJSON.put("message", "No record selected.");
         }
 
