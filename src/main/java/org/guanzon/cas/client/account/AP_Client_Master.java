@@ -112,14 +112,14 @@ public class AP_Client_Master extends Parameter {
     protected JSONObject willSave() throws SQLException, GuanzonException {
         poJSON = new JSONObject();
         if(lbValidate){
-            if(poModel.getTermId() == null || "".equals(poModel.getTermId())){
-                poJSON.put("result", "error");
-                poJSON.put("message", "Term cannot be empty.");
-                return poJSON;
-            }
             if(poModel.getPayment() == null || "".equals(poModel.getPayment())){
                 poJSON.put("result", "error");
                 poJSON.put("message", "Payment type cannot be empty.");
+                return poJSON;
+            }
+            if(poModel.getTermId() == null || "".equals(poModel.getTermId())){
+                poJSON.put("result", "error");
+                poJSON.put("message", "Term cannot be empty.");
                 return poJSON;
             }
             if(poModel.getCreditLimit() <= 0.0000){
@@ -132,13 +132,14 @@ public class AP_Client_Master extends Parameter {
             if(poBankAccount != null){
                 if(poBankAccount.getEditMode() == EditMode.ADDNEW || poBankAccount.getEditMode() == EditMode.UPDATE){
                     if(poBankAccount.getBankID() == null || "".equals(poBankAccount.getBankID())){
-                        if((poBankAccount.getAccountNumber() != null && !"".equals(poBankAccount.getAccountNumber()))
-                            || (poBankAccount.getAccountName() != null && !"".equals(poBankAccount.getAccountName()))){
+//                        if((poBankAccount.getAccountNumber() != null && !"".equals(poBankAccount.getAccountNumber()))
+//                            || (poBankAccount.getAccountName() != null && !"".equals(poBankAccount.getAccountName()))){
                             poJSON.put("result", "error");
                             poJSON.put("message", "Bank cannot be empty.");
                             return poJSON;
-                        }
-                    } else {
+//                        }
+                    } 
+//                    else {
                         if(poBankAccount.getAccountNumber() == null || "".equals(poBankAccount.getAccountNumber())){
                             poJSON.put("result", "error");
                             poJSON.put("message", "Account number cannot be empty.");
@@ -149,7 +150,7 @@ public class AP_Client_Master extends Parameter {
                             poJSON.put("message", "Account name cannot be empty.");
                             return poJSON;
                         }
-                    }
+//                    }
 
                 }
             }
