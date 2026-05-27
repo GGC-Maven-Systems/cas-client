@@ -546,8 +546,8 @@ public class InstitutionNewController implements Initializable {
                     txtField.setText(poClient.Address(pnCompany).getAddress());
                     break;
                 case 3: //province
-                    if(lsValue.isEmpty() && poClient.Address(pnCompany).getEditMode() == EditMode.ADDNEW){
-                        try{
+                    if (lsValue.isEmpty() && poClient.Address(pnCompany).getEditMode() == EditMode.ADDNEW) {
+                        try {
                             poClient.Address(pnCompany).setTownId("");
                             poClient.Address(pnCompany).setBarangayId("");
                             //Reset town model
@@ -558,8 +558,8 @@ public class InstitutionNewController implements Initializable {
                     }
                     break;
                 case 4: //town
-                    if(lsValue.isEmpty() && poClient.Address(pnCompany).getEditMode() == EditMode.ADDNEW){
-                        try{
+                    if (lsValue.isEmpty() && poClient.Address(pnCompany).getEditMode() == EditMode.ADDNEW) {
+                        try {
                             poClient.Address(pnCompany).setBarangayId("");
                             poClient.Address(pnCompany).setTownId("");
                             poClient.Address(pnCompany).Town().setTownId("");
@@ -570,7 +570,7 @@ public class InstitutionNewController implements Initializable {
                     }
                     break;
                 case 5: //brgy
-                    if(lsValue.isEmpty() && poClient.Address(pnCompany).getEditMode() == EditMode.ADDNEW){
+                    if (lsValue.isEmpty() && poClient.Address(pnCompany).getEditMode() == EditMode.ADDNEW) {
                         poClient.Address(pnCompany).setBarangayId("");
                     }
                     break;
@@ -904,7 +904,7 @@ public class InstitutionNewController implements Initializable {
         for (int i = 0; i < poClient.getAddressCount(); i++) {
 
             if (poClient.Address(i).isPrimaryAddress()) {
-                
+
 //                address = poClient.Address(i).getHouseNo() == null || poClient.Address(i).getHouseNo().isEmpty() ? "" : poClient.Address(i).getHouseNo() + " "
 //                        + poClient.Address(i).getAddress() == null || poClient.Address(i).getAddress().isEmpty() ? "" : poClient.Address(i).getAddress() + " "
 //                        + poClient.Address(i).Barangay().getBarangayName() == null || poClient.Address(i).Barangay().getBarangayName().isEmpty() ? "" : poClient.Address(i).Barangay().getBarangayName() + " "
@@ -912,8 +912,6 @@ public class InstitutionNewController implements Initializable {
 //                        + poClient.Address(i).Town().Province().getDescription() == null || poClient.Address(i).Town().Province().getDescription().isEmpty() ? "" : poClient.Address(i).Town().Province().getDescription();
 //
 //                txtField03.setText(address.trim());
-                
-                
                 txtField03.setText(poClient.getFullAddress(i));
 
                 primaryAddressExists = true; // Mark as found
@@ -999,7 +997,11 @@ public class InstitutionNewController implements Initializable {
             pbLoadingData = true;
 
             if (poClient.getInstiContactCount() > 0) {
-
+                if (poClient.InstiContact(pnContactPerson).getEditMode() == EditMode.READY || poClient.InstiContact(pnContactPerson).getEditMode() == EditMode.UPDATE) {
+                    txtContact00.setDisable(true);
+                } else {
+                    txtContact00.setDisable(false);
+                }
                 txtContact00.setText(poClient.InstiContact(pnContactPerson).getContactPersonName().trim());
                 txtContact01.setText(poClient.InstiContact(pnContactPerson).getContactPersonPosition());
                 txtContact02.setText(poClient.InstiContact(pnContactPerson).getMobileNo());
@@ -1187,7 +1189,7 @@ public class InstitutionNewController implements Initializable {
                 ShowMessageFX.Warning(getStage(), "No record loaded", MODULE, "");
                 return;
             }
-            
+
             poClient.openContactRecord(poClient.ContactPerson().getModel().getClientId(), pnContactPerson);
 
             loadContactPerson();
@@ -1241,6 +1243,8 @@ public class InstitutionNewController implements Initializable {
 
             loadContactPerson();
             return;
+        } else {
+
         }
 
         //if closed, re center form
@@ -1272,7 +1276,8 @@ public class InstitutionNewController implements Initializable {
     }
 
     private void addContactRole() throws Exception {
-//        String lsRoleId = poClient.InstiContact(pnContactPerson).getsRoleIDxx();
+        String lsRoleId = poClient.InstiContact(pnContactPerson).getsRoleIDxx();
+        txtContact08.setText("");
         //initialize Client GUI
         ClientGUI loClient = new ClientGUI();
 
@@ -1306,11 +1311,13 @@ public class InstitutionNewController implements Initializable {
 
             //if closed, re center form
             getStage().centerOnScreen();
-
             poClient.InstiContact(pnContactPerson).setsRoleIDxx(loClient.getRole().getModel().getRoleIDxx());
 
             loadContactPerson();
             return;
+        } else {
+            poClient.InstiContact(pnContactPerson).setsRoleIDxx(lsRoleId);
+            loadContactPerson();
         }
 
         //if closed, re center form
