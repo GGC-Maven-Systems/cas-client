@@ -704,20 +704,27 @@ public class Account_Accreditation extends Parameter {
         }
         poGRider.beginTrans("UPDATE STATUS", "VoidTransaction", SOURCE_CODE, getModel().getTransactionNo());
 
-        String lsSQL = "UPDATE "
-                + poModel.getTable()
-                + " SET cTranStat = " + SQLUtil.toSQL("4")
-                + " WHERE sTransNox = " + SQLUtil.toSQL(getModel().getTransactionNo());
+//        String lsSQL = "UPDATE "
+//                + poModel.getTable()
+//                + " SET cTranStat = " + SQLUtil.toSQL("4")
+//                + " WHERE sTransNox = " + SQLUtil.toSQL(getModel().getTransactionNo());
+//
+//        Long lnResult = poGRider.executeQuery(lsSQL,
+//                getModel().getTable(),
+//                poGRider.getBranchCode(), "", "");
+//        if (lnResult <= 0L) {
+//            poGRider.rollbackTrans();
 
-        Long lnResult = poGRider.executeQuery(lsSQL,
-                getModel().getTable(),
-                poGRider.getBranchCode(), "", "");
-        if (lnResult <= 0L) {
+//            poJSON = new JSONObject();
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Error updating the transaction status.");
+//            return poJSON;
+//        }
+
+        //change status - Replace script above by status change - Arsiela - 05-28-2026
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", psValidStatus, false,true);
+        if (!"success".equals((String) poJSON.get("result"))) {
             poGRider.rollbackTrans();
-
-            poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", "Error updating the transaction status.");
             return poJSON;
         }
 
