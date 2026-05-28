@@ -74,8 +74,7 @@ public class Account_Accreditation extends Parameter {
         }
         
         //if validator requires approval
-        if(!AccountAccreditationStatus.OPEN.equals(poModel.getRecordStatus()) || !AccountAccreditationStatus.OPEN.equals(psValidStatus)){
-//            if (poJSON.containsKey("isRequiredApproval") && Boolean.TRUE.equals(poJSON.get("isRequiredApproval"))) {   //comment aldrich 5/28/2026
+        if(!AccountAccreditationStatus.OPEN.equals(poModel.getRecordStatus()) || AccountAccreditationStatus.CONFIRMED.equals(psValidStatus)){
                 if (poGRider.getUserLevel() <= UserRight.ENCODER) {
                     //get approval from approving officer
                     poJSON = ShowDialogFX.getUserApproval(poGRider);
@@ -99,6 +98,7 @@ public class Account_Accreditation extends Parameter {
 //                setApproving(psApprovalUser);
             }
         }
+        
 
         //initialize model date modified and modifier
         poModel.setModifyingId((poGRider.getUserID()));
