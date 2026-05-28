@@ -714,7 +714,7 @@ public class Account_Accreditation extends Parameter {
                 //Deactivate AP Client Master
                 loObject.setWithParentClass(true);
                 loObject.setWithUI(false);
-                poJSON = loObject.deactivateRecord();
+                poJSON = loObject.BlockRecord();
                 if ("error".equals((String) poJSON.get("result"))) {
                     poGRider.rollbackTrans();
                     return poJSON;

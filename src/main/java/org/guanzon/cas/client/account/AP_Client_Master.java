@@ -103,6 +103,31 @@ public class AP_Client_Master extends Parameter {
         return poJSON;
     }
     
+    public JSONObject BlockRecord() throws SQLException, GuanzonException, CloneNotSupportedException {
+        poJSON = new JSONObject();
+        
+        //initliaze ongoing record status, for validator
+        String lsStatus = "3"; //Blocked
+        
+        //initialize validator
+        poJSON = isEntryOkay();
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
+        //change status
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", lsStatus, false,true);
+        if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
+        poJSON = new JSONObject();
+        poJSON.put("result", "success");
+        poJSON.put("message", "Record blocked successfully.");
+
+        return poJSON;
+    }
+    
     private boolean lbValidate = false;
     public void validateEntry(boolean fbValidate){
         lbValidate = fbValidate;
