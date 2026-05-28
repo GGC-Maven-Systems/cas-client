@@ -811,6 +811,9 @@ public class Account_Accreditation extends Parameter {
                     case AccountAccreditationStatus.VOID:
                         crs.updateString("cRefrStat", "VOID");
                         break;
+                    case AccountAccreditationStatus.BLOCKED:
+                        crs.updateString("cRefrStat", "BLOCKED");
+                        break;
                     default:
                         char ch = crs.getString("cRefrStat").charAt(0);
                         String stat = String.valueOf((int) ch - 64);
@@ -825,6 +828,9 @@ public class Account_Accreditation extends Parameter {
                                 break;
                             case AccountAccreditationStatus.VOID:
                                 crs.updateString("cRefrStat", "VOID");
+                                break;
+                            case AccountAccreditationStatus.BLOCKED:
+                                crs.updateString("cRefrStat", "BLOCKED");
                                 break;
                         }
                 }
