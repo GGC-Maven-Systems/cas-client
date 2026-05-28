@@ -505,8 +505,8 @@ public class Account_Accreditation extends Parameter {
                 loObject.getModel().setRecordStatus(getModel().getTransactionType().equals("1") ? "0" : "1");
                 
                 poJSON = loObject.saveRecord();
-                
                 if ("error".equals((String) poJSON.get("result"))) {
+                    poGRider.rollbackTrans();
                     return poJSON;
                 }
             } else {
@@ -526,8 +526,8 @@ public class Account_Accreditation extends Parameter {
                     //if blacklisting set  Inactive record 
                     loObject.getModel().setRecordStatus(getModel().getTransactionType().equals("1") ? "0" : "1");
                     poJSON = loObject.saveRecord();
-                    
                     if ("error".equals((String) poJSON.get("result"))) {
+                        poGRider.rollbackTrans();
                         return poJSON;
                     }
                 }
@@ -689,6 +689,61 @@ public class Account_Accreditation extends Parameter {
         return poJSON;
     }
 
+    public JSONObject BlockTransaction() throws SQLException, GuanzonException, CloneNotSupportedException {
+        poJSON = new JSONObject();
+        
+        //initliaze ongoing record status, for validator
+        psValidStatus = AccountAccreditationStatus.BLOCKED;
+        
+        //initialize validator
+        poJSON = isEntryOkay();
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        System.out.println(pbWthParent);
+        poGRider.beginTrans("UPDATE STATUS", "BlockTransaction", SOURCE_CODE, getModel().getTransactionNo());
+ 
+        //if Accreditation 
+        if (getModel().getAccountType().equals("0")) {
+            
+            //initialize AP_Client_Object
+            AP_Client_Master loObject = getAPClientMaster(getModel().getClientId());
+            
+            //make sure its onready mode
+            if (loObject.getEditMode() == EditMode.UPDATE) {
+                //Deactivate AP Client Master
+                loObject.setWithParentClass(true);
+                loObject.setWithUI(false);
+                poJSON = loObject.deactivateRecord();
+                if ("error".equals((String) poJSON.get("result"))) {
+                    poGRider.rollbackTrans();
+                    return poJSON;
+                }
+            }
+        }
+        
+        if(psApprovalUser == null || "".equals(psApprovalUser)){
+            psApprovalUser = poGRider.getUserID();
+        }
+        
+        //change status
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", psValidStatus, false,true);
+        if (!"success".equals((String) poJSON.get("result"))) {
+            poGRider.rollbackTrans();
+            return poJSON;
+        }
+
+        poGRider.commitTrans();
+
+        openRecord(getModel().getTransactionNo());
+        
+        poJSON = new JSONObject();
+        poJSON.put("result", "success");
+        poJSON.put("message", "Transaction blocked successfully.");
+
+        return poJSON;
+    }
+    
     public JSONObject VoidTransaction() throws SQLException, GuanzonException, CloneNotSupportedException {
         poJSON = new JSONObject();
 

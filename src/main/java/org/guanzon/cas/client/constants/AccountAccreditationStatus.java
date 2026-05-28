@@ -12,6 +12,7 @@ public class AccountAccreditationStatus {
     
     public static final String OPEN = "0";
     public static final String CONFIRMED = "1";
+    public static final String BLOCKED = "3";
     public static final String VOID = "4";
     
 }
