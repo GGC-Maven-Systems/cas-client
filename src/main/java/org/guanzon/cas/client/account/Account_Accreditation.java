@@ -64,7 +64,7 @@ public class Account_Accreditation extends Parameter {
         loValidator.setApplicationDriver(poGRider);
         loValidator.setTransactionStatus(psValidStatus);
         loValidator.setMaster(poModel);
-        
+
         //validate
         poJSON = loValidator.validate();
         
@@ -75,21 +75,20 @@ public class Account_Accreditation extends Parameter {
         
         //if validator requires approval
         if(!AccountAccreditationStatus.OPEN.equals(poModel.getRecordStatus()) || !AccountAccreditationStatus.OPEN.equals(psValidStatus)){
-            if (poJSON.containsKey("isRequiredApproval") && Boolean.TRUE.equals(poJSON.get("isRequiredApproval"))) {
+//            if (poJSON.containsKey("isRequiredApproval") && Boolean.TRUE.equals(poJSON.get("isRequiredApproval"))) {   //comment aldrich 5/28/2026
+                if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                    //get approval from approving officer
+                    poJSON = ShowDialogFX.getUserApproval(poGRider);
+                    if ("error".equals((String) poJSON.get("result"))) {
+                        return poJSON;
+                    }
 
-                //get approval from approving officer
-                poJSON = ShowDialogFX.getUserApproval(poGRider);
-                if ("error".equals((String) poJSON.get("result"))) {
-                    return poJSON;
-                }
+                    if (Integer.parseInt(poJSON.get("nUserLevl").toString()) <= UserRight.ENCODER){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "User is not an authorized approving officer.");
 
-                if (Integer.parseInt(poJSON.get("nUserLevl").toString()) <= UserRight.ENCODER){
-                    poJSON.put("result", "error");
-                    poJSON.put("message", "User is not an authorized approving officer.");
-
-                    return poJSON;
-                }
-                
+                        return poJSON;
+                    }
                 //if success, return approving officer user id
                 psApprovalUser = poJSON.get("sUserIDxx") != null
                         ? poJSON.get("sUserIDxx").toString()
@@ -98,7 +97,6 @@ public class Account_Accreditation extends Parameter {
                 //add approver's id to result
                 poJSON.put("sApproved", psApprovalUser);
 //                setApproving(psApprovalUser);
-                
             }
         }
 
