@@ -43,7 +43,7 @@
                                                     <children>
                                                             <GridPane layoutX="20.0" layoutY="1.0" vgap="2.0" AnchorPane.leftAnchor="10.0" AnchorPane.topAnchor="0.0">
                                                                 <columnConstraints>
-                                                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="160.0" minWidth="80.0" prefWidth="80.0" />
+                                                                    <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" maxWidth="160.0" minWidth="90.0" prefWidth="90.0" />
                                                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="80.0" prefWidth="80.0" />
                                                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="80.0" prefWidth="80.0" />
                                                                     <ColumnConstraints hgrow="SOMETIMES" minWidth="80.0" prefWidth="80.0" />
@@ -67,7 +67,7 @@
                                                                             <Insets left="5.0" />
                                                                         </GridPane.margin>
                                                                     </TextField>
-                                                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Company Nm" GridPane.rowIndex="2">
+                                                                    <Text strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Company Name" GridPane.rowIndex="2">
                                                                         <font>
                                                                             <Font size="14.0" />
                                                                         </font>
@@ -120,11 +120,11 @@
                                                          <children>
                                                             <TableView fx:id="tblAddress" layoutX="20.0" layoutY="210.0" prefHeight="180.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="180.0">
                                                                <columns>
-                                                                  <TableColumn fx:id="indexAddress01" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="35.0" text="No." />
-                                                                  <TableColumn fx:id="indexAddress02" prefWidth="75.0" text="House No." />
-                                                                  <TableColumn fx:id="indexAddress03" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="180.0" text="Address" />
-                                                                  <TableColumn fx:id="indexAddress04" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="141.0" text="Town" />
-                                                                  <TableColumn fx:id="indexAddress05" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="213.0" text="Barangay" />
+                                                                  <TableColumn fx:id="indexAddress01" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="35.0" sortable="false" text="No." />
+                                                                  <TableColumn fx:id="indexAddress02" editable="false" prefWidth="75.0" sortable="false" text="House No." />
+                                                                  <TableColumn fx:id="indexAddress03" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="180.0" sortable="false" text="Address" />
+                                                                  <TableColumn fx:id="indexAddress04" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="141.0" sortable="false" text="Town" />
+                                                                  <TableColumn fx:id="indexAddress05" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="213.0" sortable="false" text="Barangay" />
                                                                </columns>
                                                             </TableView>
                                                             <GridPane fx:id="gridAddress" hgap="2.0" layoutX="14.0" layoutY="233.0" vgap="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -200,7 +200,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for address" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -381,9 +381,6 @@
                                                                                        <graphic>
                                                                                           <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                                        </graphic>
-                                                                                       <tooltip>
-                                                                                          <Tooltip text="ADD ADDRESS" />
-                                                                                       </tooltip>
                                                                                     </Button>
                                                                                     <TextField fx:id="txtContact08" minWidth="150.0" promptText="Press F3: Search" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2">
                                                                                        <GridPane.margin>
@@ -394,9 +391,6 @@
                                                                                        <graphic>
                                                                                           <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                                        </graphic>
-                                                                                       <tooltip>
-                                                                                          <Tooltip text="ADD ADDRESS" />
-                                                                                       </tooltip>
                                                                                     </Button>
                                                                                     <TextField fx:id="txtContact02" editable="false" minWidth="150.0" prefHeight="30.0" prefWidth="175.0" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="4">
                                                                                        <GridPane.margin>
@@ -444,7 +438,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for contact person" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -458,10 +452,10 @@
                                                                            <children>
                                                                               <TableView fx:id="tblSocMed" prefHeight="300.0" prefWidth="615.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0">
                                                                                  <columns>
-                                                                                    <TableColumn fx:id="indexSocMed01" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="35.0" text="No." />
-                                                                                    <TableColumn fx:id="indexSocMed02" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="271.0" text="Name" />
-                                                                                    <TableColumn fx:id="indexSocMed03" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="206.0" text="Role" />
-                                                                                    <TableColumn fx:id="indexSocMed04" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="141.0" text="Status" />
+                                                                                    <TableColumn fx:id="indexSocMed01" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="35.0" sortable="false" text="No." />
+                                                                                    <TableColumn fx:id="indexSocMed02" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="271.0" sortable="false" text="Name" />
+                                                                                    <TableColumn fx:id="indexSocMed03" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="206.0" sortable="false" text="Role" />
+                                                                                    <TableColumn fx:id="indexSocMed04" editable="false" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="141.0" sortable="false" text="Status" />
                                                                                  </columns>
                                                                               </TableView>
                                                                            </children>
@@ -497,7 +491,7 @@
                      <children>
                         <HBox fx:id="hbButtons" alignment="CENTER_LEFT" layoutY="18.0" prefHeight="51.0" prefWidth="678.0" spacing="3.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <Button fx:id="btnSave" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@../css/StyleSheet.css" text="Okay">
+                              <Button fx:id="btnSave" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@StyleSheet.css" text="Okay">
                                  <graphic>
                                     <FontAwesomeIconView glyphName="SAVE" size="20" />
                                  </graphic>
@@ -505,7 +499,7 @@
                                     <Blend />
                                  </effect>
                               </Button>
-                              <Button fx:id="btnCancel" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@../css/StyleSheet.css" text="Cancel">
+                              <Button fx:id="btnCancel" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@StyleSheet.css" text="Cancel">
                                  <graphic>
                                     <FontAwesomeIconView glyphName="CLOSE" size="20" />
                                  </graphic>

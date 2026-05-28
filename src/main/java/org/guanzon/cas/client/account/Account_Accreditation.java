@@ -4,7 +4,10 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import javax.sql.rowset.CachedRowSet;
+import org.apache.poi.hssf.record.Record;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Parameter;
 import org.guanzon.appdriver.base.CommonUtils;
@@ -13,10 +16,13 @@ import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
 import org.guanzon.appdriver.constant.ClientType;
 import org.guanzon.appdriver.constant.EditMode;
+import org.guanzon.appdriver.constant.Logical;
+import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.appdriver.constant.TransactionStatus;
 import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
 import org.guanzon.cas.client.ClientGUI;
+import org.guanzon.cas.client.ClientInfo;
 import org.guanzon.cas.client.constants.AccountAccreditationStatus;
 import org.guanzon.cas.client.model.Model_Account_Client_Accreditation;
 import org.guanzon.cas.client.model.Model_Client_Address;
@@ -24,7 +30,13 @@ import org.guanzon.cas.client.model.Model_Client_Institution_Contact;
 import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.client.validator.ClientAccreditationValidatorFactory;
+import org.guanzon.cas.parameter.Company;
+import org.guanzon.cas.parameter.model.Model_Company;
+import org.guanzon.cas.parameter.services.ParamControllers;
+import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
+import ph.com.guanzongroup.cas.cashflow.model.Model_Payee;
+import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
 
 public class Account_Accreditation extends Parameter {
 
@@ -52,7 +64,7 @@ public class Account_Accreditation extends Parameter {
         loValidator.setApplicationDriver(poGRider);
         loValidator.setTransactionStatus(psValidStatus);
         loValidator.setMaster(poModel);
-        
+
         //validate
         poJSON = loValidator.validate();
         
@@ -62,29 +74,31 @@ public class Account_Accreditation extends Parameter {
         }
         
         //if validator requires approval
-        if (poJSON.containsKey("isRequiredApproval") && Boolean.TRUE.equals(poJSON.get("isRequiredApproval"))) {
-            
-            //get approval from approving officer
-            poJSON = ShowDialogFX.getUserApproval(poGRider);
-            if ("error".equals((String) poJSON.get("result"))) {
-                return poJSON;
-            }
-            
-            if (Integer.parseInt(poJSON.get("nUserLevl").toString()) <= UserRight.ENCODER){
-                poJSON.put("result", "error");
-                poJSON.put("message", "User is not an authorized approving officer.");
-                
-                return poJSON;
-            }
+        if(!AccountAccreditationStatus.OPEN.equals(poModel.getRecordStatus()) || AccountAccreditationStatus.CONFIRMED.equals(psValidStatus)){
+                if (poGRider.getUserLevel() <= UserRight.ENCODER) {
+                    //get approval from approving officer
+                    poJSON = ShowDialogFX.getUserApproval(poGRider);
+                    if ("error".equals((String) poJSON.get("result"))) {
+                        return poJSON;
+                    }
 
-            //if success, return approving officer user id
-            psApprovalUser = poJSON.get("sUserIDxx") != null
-                    ? poJSON.get("sUserIDxx").toString()
-                    : poGRider.getUserID();
+                    if (Integer.parseInt(poJSON.get("nUserLevl").toString()) <= UserRight.ENCODER){
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "User is not an authorized approving officer.");
 
-            //add approver's id to result
-            poJSON.put("sApproved", psApprovalUser);
+                        return poJSON;
+                    }
+                //if success, return approving officer user id
+                psApprovalUser = poJSON.get("sUserIDxx") != null
+                        ? poJSON.get("sUserIDxx").toString()
+                        : poGRider.getUserID();
+
+                //add approver's id to result
+                poJSON.put("sApproved", psApprovalUser);
+//                setApproving(psApprovalUser);
+            }
         }
+        
 
         //initialize model date modified and modifier
         poModel.setModifyingId((poGRider.getUserID()));
@@ -181,6 +195,14 @@ public class Account_Accreditation extends Parameter {
         loObject.setWithParentClass(true);
         return loObject;
     }
+    
+    public String getCompany() throws SQLException, GuanzonException{
+        Model_Company loObject = new ParamModels(poGRider).Company();
+        loObject.initialize();
+        loObject.openRecord(poGRider.getCompnyId());
+        
+        return loObject.getCompanyName();
+    }
 
     public JSONObject searchCategory(String fsValue, boolean fbByCode) throws SQLException, GuanzonException {
         JSONObject loJSON;
@@ -209,7 +231,8 @@ public class Account_Accreditation extends Parameter {
             loJSON.put("result", "success");
             getModel().setCategoryCode((String) loJSON.get("sCategrCd"));
         } else {
-            loJSON.put("result", "success");
+            loJSON = new JSONObject();
+            loJSON.put("result", "error");
             loJSON.put("message", "No record selected.");
         }
 
@@ -217,16 +240,14 @@ public class Account_Accreditation extends Parameter {
     }
 
     public JSONObject searchCompany(String fsValue ,boolean fbByCode) throws SQLException, GuanzonException, Exception {
-
         JSONObject loJSON = null;
-        
         //retrieve records (value not empty), new entry (empty string)
         String lsSQL = "SELECT"
-            + " sClientID"
-            + ", sCompnyNm"
-            + " FROM Client_Master"
-            + " WHERE cRecdStat= '1'"
-            + " AND cClientTp= '1'";
+                    + " sClientID "
+                    + ", sCompnyNm "
+                    + " FROM Client_Master"
+                    + " WHERE cRecdStat = " + SQLUtil.toSQL(RecordStatus.ACTIVE)
+                    + " AND cClientTp = " + SQLUtil.toSQL(Logical.YES);
 
         loJSON = ShowDialogFX.Search(poGRider, 
                 lsSQL, 
@@ -237,13 +258,26 @@ public class Account_Accreditation extends Parameter {
                 fbByCode ? 0 : 1);
 
         if (loJSON == null) {
+            loJSON = new JSONObject();
+            loJSON.put("result", "error");
+            loJSON.put("message", "No record selected.");
             return loJSON;
         }else{
             if ("error".equals(loJSON.get("result"))) {
                 return loJSON;
             }
         }
-
+        
+        //Check Existing Supplier Accreditation Added by Arsiela - 05-23-2026s
+        String lsClientId = loJSON.get("sClientID").toString();
+        if(lsClientId != null && !"".equals(lsClientId)){
+            //check existing record of client id to other supplier accreditation records
+            loJSON = checkExistingSupplierRecord(lsClientId); //Moved script to method by Arsiela 05-23-2026 09:19 AM
+            if ("error".equals((String) loJSON.get("result"))) {
+                return loJSON;
+            }
+        }
+        
         //initialize Client GUI
         ClientGUI loClient = new ClientGUI();
 
@@ -260,14 +294,9 @@ public class Account_Accreditation extends Parameter {
 
         //set search by code
         loClient.setByCode(fbByCode);
-
-        if (loJSON == null) {
-            loJSON.put("result", "error");
-            loJSON.put("message", "No record to load");
-            return loJSON;
-        }
+        
         //set cilent id to load for company entry
-        loClient.setClientId(loJSON.get("sClientID").toString());
+        loClient.setClientId(lsClientId);
         
         //load record
         CommonUtils.showModal(loClient);
@@ -277,31 +306,101 @@ public class Account_Accreditation extends Parameter {
 
         //load if button 
         if (!loClient.isCancelled()) {
-            
+            lsClientId = loClient.getClientId();
             //check existing record of client id to other supplier accreditation records
-            lsSQL = "SELECT " +
-                            "* " +
-                           "FROM " +
-                            "Account_Client_Accreditation";
-            
-            lsSQL = MiscUtil.addCondition(lsSQL, 
-                                     "sClientID = " + SQLUtil.toSQL(loClient.getClient().getModel().getClientId()!= null ? loClient.getClient().getModel().getClientId(): "" + " ") +
-                                    "AND " +
-                                     "(sTransNox <> " + SQLUtil.toSQL(poModel.getTransactionNo()) +
-                                    "AND " +
-                                     "cTranStat <> '4')"
-            );
-
-            ResultSet loRS = poGRider.executeQuery(lsSQL);
-            if (MiscUtil.RecordCount(loRS) > 0) {
-                loResult.put("result", "error");
-                loResult.put("message", "Client is already accredited as supplier!");
-                return loResult;
+            loJSON = checkExistingSupplierRecord(lsClientId); //Moved script to method by Arsiela 05-23-2026 09:19 AM
+            if ("error".equals((String) loJSON.get("result"))) {
+                return loJSON;
             }
-            MiscUtil.close(loRS);
+//            //check existing record of client id to other supplier accreditation records
+//            lsSQL = "SELECT " +
+//                   " * " +
+//                   " FROM " +
+//                   " Account_Client_Accreditation";
+//            lsSQL = MiscUtil.addCondition(lsSQL, 
+//                                    " sClientID = " + SQLUtil.toSQL(lsClientId != null ? lsClientId : "" + " ") +
+//                                    " AND (sTransNox <> " + SQLUtil.toSQL(poModel.getTransactionNo()) +
+//                                    " AND cTranStat <> '4')"
+//            );
+//
+//            ResultSet loRS = poGRider.executeQuery(lsSQL);
+//            if (MiscUtil.RecordCount(loRS) > 0) {
+//                loResult.put("result", "error");
+//                loResult.put("message", "Client is already accredited as supplier!");
+//                return loResult;
+//            }
+//            MiscUtil.close(loRS);
 
             //set company id for supplier accreditation
-            getModel().setClientId(loClient.getClient().getModel().getClientId()!= null ? loClient.getClient().getModel().getClientId(): "");
+            getModel().setClientId(lsClientId != null ? lsClientId: "");
+            //get address
+            for(Model_Client_Address loAddr : loClient.getClient().AddressList()){
+                //set primary address
+                if (loAddr.isPrimaryAddress()) {
+                    
+                    getModel().setAddressId(loAddr.getAddressId()!= null ? loAddr.getAddressId() : "");
+                    
+                    getModel().ClientAddress().setBarangayId(loAddr.getBarangayId());
+                    getModel().ClientAddress().setTownId(loAddr.getTownId());
+                    break;
+                }
+            }
+
+            //get contact
+            for(Model_Client_Institution_Contact loContact : loClient.getClient().InstiContactList()){
+
+                //set primary contact person of company for supplier accreditation and ap client master
+                if (loContact.isPrimaryContactPersion()) {
+                    getModel().setContactId(loContact.getContactPId()!= null ? loContact.getContactPId() : "");
+                    break;
+                }
+            }
+        }
+        loResult.put("result", "success");
+        return loResult;
+    }
+    
+    public JSONObject addCompany() throws SQLException, GuanzonException, Exception {
+        //initialize new json for result
+        JSONObject loResult = new JSONObject();
+        
+        String lsClientId = poModel.getClientId();
+        
+        //initialize Client GUI
+        ClientGUI loClient = new ClientGUI();
+
+        loClient.setGRider(poGRider);
+        loClient.setLogWrapper(null);
+        loClient.setCategoryCode((String) getModel().getCategoryCode());
+
+        //filter client type 
+        loClient.setClientType(ClientType.INSTITUTION);
+
+        //searchRecord(fsValue,fbByCode) will run make sure to set client and bycode
+        //bycode true client id
+        //bycode false company
+
+        //set search by code
+        loClient.setByCode(false);
+
+        //set cilent empty, to create a new record
+        //Arsiela - 05-22-2026 - Load Client of Create new Client
+        loClient.setClientId(lsClientId);
+        
+        //load record
+        CommonUtils.showModal(loClient);
+
+        //load if button 
+        if (!loClient.isCancelled()) {
+            lsClientId = loClient.getClient().getModel().getClientId();
+            //check existing record of client id to other supplier accreditation records
+            loResult = checkExistingSupplierRecord(lsClientId); //Moved script to method by Arsiela 05-23-2026 09:19 AM
+            if ("error".equals((String) loResult.get("result"))) {
+                return loResult;
+            }
+
+            //set company id for supplier accreditation
+            getModel().setClientId(lsClientId != null ? lsClientId : "");
 
             //get address
             for(Model_Client_Address loAddr : loClient.getClient().AddressList()){
@@ -331,89 +430,32 @@ public class Account_Accreditation extends Parameter {
         return loResult;
     }
     
-    public JSONObject addCompany() throws SQLException, GuanzonException, Exception {
-
-        JSONObject loJSON = null;
-
-        //initialize Client GUI
-        ClientGUI loClient = new ClientGUI();
-
-        loClient.setGRider(poGRider);
-        loClient.setLogWrapper(null);
-        loClient.setCategoryCode((String) getModel().getCategoryCode());
-
-        //filter client type 
-        loClient.setClientType(ClientType.INSTITUTION);
-
-        //searchRecord(fsValue,fbByCode) will run make sure to set client and bycode
-        //bycode true client id
-        //bycode false company
-
-        //set search by code
-        loClient.setByCode(false);
-
-        //set cilent empty, to create a new record
-        loClient.setClientId("");
-        
-        //load record
-        CommonUtils.showModal(loClient);
-
-        //initialize new json for result
+    private JSONObject checkExistingSupplierRecord(String fsClientId) throws SQLException{
         JSONObject loResult = new JSONObject();
+        //check existing record of client id to other supplier accreditation records
+        String lsSQL = "SELECT " +
+                        "* " +
+                       "FROM " +
+                        "Account_Client_Accreditation";
 
-        //load if button 
-        if (!loClient.isCancelled()) {
-            
-            //check existing record of client id to other supplier accreditation records
-            String lsSQL = "SELECT " +
-                            "* " +
-                           "FROM " +
-                            "Account_Client_Accreditation";
-            
-            lsSQL = MiscUtil.addCondition(lsSQL, 
-                                     "sClientID = " + SQLUtil.toSQL(loClient.getClient().getModel().getClientId()!= null ? loClient.getClient().getModel().getClientId(): "" + " ") +
-                                    "AND " +
-                                     "(sTransNox <> " + SQLUtil.toSQL(poModel.getTransactionNo()) +
-                                    "AND " +
-                                     "cTranStat <> '4')"
-            );
+        lsSQL = MiscUtil.addCondition(lsSQL, 
+                                 "sClientID = " + SQLUtil.toSQL(fsClientId != null ? fsClientId: "" + " ") +
+                                "AND " +
+                                 "(sTransNox <> " + SQLUtil.toSQL(poModel.getTransactionNo()) +
+                                "AND " +
+                                 "cTranStat <> '4')"
+        );
 
-            ResultSet loRS = poGRider.executeQuery(lsSQL);
-            if (MiscUtil.RecordCount(loRS) > 0) {
-                loResult.put("result", "error");
-                loResult.put("message", "Client is already accredited as supplier!");
-                return loResult;
-            }
-            MiscUtil.close(loRS);
-
-            //set company id for supplier accreditation
-            getModel().setClientId(loClient.getClient().getModel().getClientId()!= null ? loClient.getClient().getModel().getClientId(): "");
-
-            //get address
-            for(Model_Client_Address loAddr : loClient.getClient().AddressList()){
-
-                //set primary address
-                if (loAddr.isPrimaryAddress()) {
-                    
-                    getModel().setAddressId(loAddr.getAddressId()!= null ? loAddr.getAddressId() : "");
-                    
-                    getModel().ClientAddress().setBarangayId(loAddr.getBarangayId());
-                    getModel().ClientAddress().setTownId(loAddr.getTownId());
-                    break;
-                }
-            }
-
-            //get contact
-            for(Model_Client_Institution_Contact loContact : loClient.getClient().InstiContactList()){
-
-                //set primary contact person of company for supplier accreditation and ap client master
-                if (loContact.isPrimaryContactPersion()) {
-                    getModel().setContactId(loContact.getContactPId()!= null ? loContact.getContactPId() : "");
-                    break;
-                }
-            }
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        if (MiscUtil.RecordCount(loRS) > 0) {
+            loResult.put("result", "error");
+            loResult.put("message", "Client is already accredited as supplier!");
+            return loResult;
         }
+        MiscUtil.close(loRS);
+        
         loResult.put("result", "success");
+        loResult.put("message", "success");
         return loResult;
     }
     
@@ -463,8 +505,8 @@ public class Account_Accreditation extends Parameter {
                 loObject.getModel().setRecordStatus(getModel().getTransactionType().equals("1") ? "0" : "1");
                 
                 poJSON = loObject.saveRecord();
-                
                 if ("error".equals((String) poJSON.get("result"))) {
+                    poGRider.rollbackTrans();
                     return poJSON;
                 }
             } else {
@@ -484,12 +526,78 @@ public class Account_Accreditation extends Parameter {
                     //if blacklisting set  Inactive record 
                     loObject.getModel().setRecordStatus(getModel().getTransactionType().equals("1") ? "0" : "1");
                     poJSON = loObject.saveRecord();
-                    
                     if ("error".equals((String) poJSON.get("result"))) {
+                        poGRider.rollbackTrans();
                         return poJSON;
                     }
                 }
 
+            }
+            
+            //Generate Payee for Contact person - Arsiela 05-23-2026 09:58AM
+            //Load all contact persion and check if payee was checked if none create a payee directly to the supplier
+            System.out.println("---------------SAVING PAYEE------------------");
+            ClientInfo loClient = new ClientControllers(poGRider, logwrapr).ClientInfo();
+            loClient.initialize();
+            loClient.setWithParentClass(true);
+            loClient.setWithUI(false);
+            
+            poJSON = loClient.openClientRecord(getModel().getClientId());
+            if (!"success".equals((String) poJSON.get("result"))) {
+                poGRider.rollbackTrans();
+                return poJSON;
+            }
+            
+            /*
+            BR - 05-23-2026 01:24 PM
+            Magiinsert lang ito after ng confirmation/approval. 
+            If cPayee is = 0, Payee name is company name and clientID and sAPclientid is equal to supplier id. If payee is = 1, 
+            Payee name is the contact person and sAPCluientId is supplier id and sclientID is client id ni contact person;
+            */
+            Model_Payee object;
+            boolean lbCPPayee = false;
+            for(int lnCtr = 0;lnCtr < loClient.getInstiContactCount(); lnCtr++){
+                object = new CashflowModels(poGRider).Payee();
+                if(Logical.YES.equals(loClient.InstiContact(lnCtr).getcPayeexxx())){
+                    poJSON = object.newRecord();
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        poGRider.rollbackTrans();
+                        return poJSON;
+                    }
+                    object.setAPClientID(getModel().getClientId()); //Supplie Client ID
+                    object.setClientID(loClient.InstiContact(lnCtr).getcCPrsonID());  //Contact Person Client ID
+                    object.setPayeeName(loClient.InstiContact(lnCtr).getContactPersonName().trim());
+                    object.setModifiedDate(poGRider.getServerDate());
+                    object.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+                    poJSON = object.saveRecord();
+                    if (!"success".equals((String) poJSON.get("result"))){
+                        poGRider.rollbackTrans();
+                        return poJSON;
+                    }
+                    
+                    if(!lbCPPayee){
+                        lbCPPayee = true;
+                    }
+                }
+            }
+            
+            if(!lbCPPayee){
+                object = new CashflowModels(poGRider).Payee();
+                poJSON = object.newRecord();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    poGRider.rollbackTrans();
+                    return poJSON;
+                }
+                object.setAPClientID(getModel().getClientId());
+                object.setClientID(getModel().getClientId()); 
+                object.setPayeeName(getModel().Client().getCompanyName().trim());
+                object.setModifiedDate(poGRider.getServerDate());
+                object.setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+                poJSON = object.saveRecord();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    poGRider.rollbackTrans();
+                    return poJSON;
+                }
             }
             
             /**
@@ -540,11 +648,14 @@ public class Account_Accreditation extends Parameter {
 //                }
 //            }
         }
-
+        
+        if(psApprovalUser == null || "".equals(psApprovalUser)){
+            psApprovalUser = poGRider.getUserID();
+        }
+        
         String lsSQL = "UPDATE "
                 + poModel.getTable()
-                + " SET   cTranStat = " + SQLUtil.toSQL("1")
-                + ", sApproved= " + SQLUtil.toSQL(poGRider.getUserID())
+                + " SET sApproved= " + SQLUtil.toSQL(psApprovalUser)
                 + ", dApproved= " + SQLUtil.toSQL(poGRider.getServerDate())
                 + " WHERE sTransNox = " + SQLUtil.toSQL(getModel().getTransactionNo());
 
@@ -559,6 +670,13 @@ public class Account_Accreditation extends Parameter {
             poJSON.put("message", "Error updating the transaction status.");
             return poJSON;
         }
+        
+        //change status
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", psValidStatus, false,true);
+        if (!"success".equals((String) poJSON.get("result"))) {
+            poGRider.rollbackTrans();
+            return poJSON;
+        }
 
         poGRider.commitTrans();
 
@@ -571,6 +689,61 @@ public class Account_Accreditation extends Parameter {
         return poJSON;
     }
 
+    public JSONObject BlockTransaction() throws SQLException, GuanzonException, CloneNotSupportedException {
+        poJSON = new JSONObject();
+        
+        //initliaze ongoing record status, for validator
+        psValidStatus = AccountAccreditationStatus.BLOCKED;
+        
+        //initialize validator
+        poJSON = isEntryOkay();
+        if ("error".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        System.out.println(pbWthParent);
+        poGRider.beginTrans("UPDATE STATUS", "BlockTransaction", SOURCE_CODE, getModel().getTransactionNo());
+ 
+        //if Accreditation 
+        if (getModel().getAccountType().equals("0")) {
+            
+            //initialize AP_Client_Object
+            AP_Client_Master loObject = getAPClientMaster(getModel().getClientId());
+            
+            //make sure its onready mode
+            if (loObject.getEditMode() == EditMode.UPDATE) {
+                //Deactivate AP Client Master
+                loObject.setWithParentClass(true);
+                loObject.setWithUI(false);
+                poJSON = loObject.BlockRecord();
+                if ("error".equals((String) poJSON.get("result"))) {
+                    poGRider.rollbackTrans();
+                    return poJSON;
+                }
+            }
+        }
+        
+        if(psApprovalUser == null || "".equals(psApprovalUser)){
+            psApprovalUser = poGRider.getUserID();
+        }
+        
+        //change status
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", psValidStatus, false,true);
+        if (!"success".equals((String) poJSON.get("result"))) {
+            poGRider.rollbackTrans();
+            return poJSON;
+        }
+
+        poGRider.commitTrans();
+
+        openRecord(getModel().getTransactionNo());
+        
+        poJSON = new JSONObject();
+        poJSON.put("result", "success");
+        poJSON.put("message", "Transaction blocked successfully.");
+
+        return poJSON;
+    }
+    
     public JSONObject VoidTransaction() throws SQLException, GuanzonException, CloneNotSupportedException {
         poJSON = new JSONObject();
 
@@ -584,20 +757,27 @@ public class Account_Accreditation extends Parameter {
         }
         poGRider.beginTrans("UPDATE STATUS", "VoidTransaction", SOURCE_CODE, getModel().getTransactionNo());
 
-        String lsSQL = "UPDATE "
-                + poModel.getTable()
-                + " SET cTranStat = " + SQLUtil.toSQL("4")
-                + " WHERE sTransNox = " + SQLUtil.toSQL(getModel().getTransactionNo());
+//        String lsSQL = "UPDATE "
+//                + poModel.getTable()
+//                + " SET cTranStat = " + SQLUtil.toSQL("4")
+//                + " WHERE sTransNox = " + SQLUtil.toSQL(getModel().getTransactionNo());
+//
+//        Long lnResult = poGRider.executeQuery(lsSQL,
+//                getModel().getTable(),
+//                poGRider.getBranchCode(), "", "");
+//        if (lnResult <= 0L) {
+//            poGRider.rollbackTrans();
 
-        Long lnResult = poGRider.executeQuery(lsSQL,
-                getModel().getTable(),
-                poGRider.getBranchCode(), "", "");
-        if (lnResult <= 0L) {
+//            poJSON = new JSONObject();
+//            poJSON.put("result", "error");
+//            poJSON.put("message", "Error updating the transaction status.");
+//            return poJSON;
+//        }
+
+        //change status - Replace script above by status change - Arsiela - 05-28-2026
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", psValidStatus, false,true);
+        if (!"success".equals((String) poJSON.get("result"))) {
             poGRider.rollbackTrans();
-
-            poJSON = new JSONObject();
-            poJSON.put("result", "error");
-            poJSON.put("message", "Error updating the transaction status.");
             return poJSON;
         }
 
@@ -631,6 +811,9 @@ public class Account_Accreditation extends Parameter {
                     case AccountAccreditationStatus.VOID:
                         crs.updateString("cRefrStat", "VOID");
                         break;
+                    case AccountAccreditationStatus.BLOCKED:
+                        crs.updateString("cRefrStat", "BLOCKED");
+                        break;
                     default:
                         char ch = crs.getString("cRefrStat").charAt(0);
                         String stat = String.valueOf((int) ch - 64);
@@ -645,6 +828,9 @@ public class Account_Accreditation extends Parameter {
                                 break;
                             case AccountAccreditationStatus.VOID:
                                 crs.updateString("cRefrStat", "VOID");
+                                break;
+                            case AccountAccreditationStatus.BLOCKED:
+                                crs.updateString("cRefrStat", "BLOCKED");
                                 break;
                         }
                 }

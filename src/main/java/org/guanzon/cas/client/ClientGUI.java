@@ -69,6 +69,10 @@ public class ClientGUI extends Application {
         yOffset = Y;
     }
     
+    public String getClientId() {
+        return psClientId;
+    }
+    
     public ClientInfo getClient(){
         return poClient;
     }
@@ -148,6 +152,7 @@ public class ClientGUI extends Application {
             pbCancelled = controller.isCancelled();
             if (!pbCancelled) {
                 poClient = controller.getClient();
+                psClientId = controller.getClientId();
             }
         } else if(psClientTp.equals(ClientType.INSTITUTION)) {
             
@@ -200,6 +205,7 @@ public class ClientGUI extends Application {
             pbCancelled = controller.isCancelled();
             if (!pbCancelled) {
                 poClient = controller.getClient();
+                psClientId = controller.getClientId();
             }
         }else{
             

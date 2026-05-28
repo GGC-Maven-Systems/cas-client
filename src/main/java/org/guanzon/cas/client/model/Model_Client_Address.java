@@ -234,25 +234,63 @@ public class Model_Client_Address extends Model{
     }
     
     public Model_Barangay Barangay() throws SQLException, GuanzonException{
-        if (!"".equals(getValue("sBrgyIDxx"))) {
-            
-            this.poJSON = this.poBarangay.openRecord((String) getValue("sBrgyIDxx"));
-            if ("success".equals(this.poJSON.get("result"))) {
-                return this.poBarangay;
+        if (!"".equals((String) getValue("sBrgyIDxx"))) {
+            if (poBarangay.getEditMode() == EditMode.READY
+                    && poBarangay.getBarangayId().equals((String) getValue("sBrgyIDxx"))) {
+                return poBarangay;
+            } else {
+                poJSON = poBarangay.openRecord((String) getValue("sBrgyIDxx"));
+
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poBarangay;
+                } else {
+                    poBarangay.initialize();
+                    return poBarangay;
+                }
             }
+        } else {
+            poBarangay.initialize();
+            return poBarangay;
         }
-        return this.poBarangay;
+        
+        
+//        if (!"".equals(getValue("sBrgyIDxx"))) {
+//            
+//            this.poJSON = this.poBarangay.openRecord((String) getValue("sBrgyIDxx"));
+//            if ("success".equals(this.poJSON.get("result"))) {
+//                return this.poBarangay;
+//            }
+//        }
+//        return this.poBarangay;
     }
     
     public Model_TownCity Town() throws SQLException, GuanzonException{
-        if (!"".equals(getValue("sTownIDxx"))) {
+        if (!"".equals((String) getValue("sTownIDxx"))) {
             
-            this.poJSON = this.poTownCity.openRecord((String) getValue("sTownIDxx"));
-            if ("success".equals(this.poJSON.get("result"))) {
-                return this.poTownCity;
+            if (poTownCity.getEditMode() == EditMode.READY
+                    && poTownCity.getTownId().equals((String) getValue("sTownIDxx"))) {
+                return poTownCity;
+            } else {
+                poJSON = poTownCity.openRecord((String) getValue("sTownIDxx"));
+                if ("success".equals((String) poJSON.get("result"))) {
+                    return poTownCity;
+                } else {
+                    poTownCity.initialize();
+                    return poTownCity;
+                }
             }
+        } else {
+            return poTownCity;
         }
-        return this.poTownCity;
+        
+//        if (!"".equals(getValue("sTownIDxx"))) {
+//            
+//            this.poJSON = this.poTownCity.openRecord((String) getValue("sTownIDxx"));
+//            if ("success".equals(this.poJSON.get("result"))) {
+//                return this.poTownCity;
+//            }
+//        }
+//        return this.poTownCity;
     }
     
     public Model_Client_Master Client() throws SQLException, GuanzonException{

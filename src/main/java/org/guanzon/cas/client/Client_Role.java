@@ -47,7 +47,17 @@ public class Client_Role extends Parameter{
                    "WHERE " +
                     "cRecdStat= '1'"; 
     }
-
+    @Override
+    public JSONObject isEntryOkay() throws SQLException, GuanzonException, CloneNotSupportedException {
+       poJSON = new JSONObject();
+          if (poModel.getsRoleDesc() == null || poModel.getsRoleDesc().isEmpty()) {
+               poJSON.put("result", "error");
+               poJSON.put("message", "Role Description must not be empty.");
+               return poJSON;
+           }
+       poJSON.put("result", "success");
+       return poJSON;
+    }
     @Override
     public JSONObject searchRecord(String value, boolean byCode) throws SQLException, GuanzonException {
         

@@ -511,7 +511,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for address" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -593,7 +593,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for contact number" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -709,7 +709,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" text="" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for email address" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -820,7 +820,7 @@
                                                                         <FontAwesomeIconView glyphName="PLUS" size="15" textAlignment="CENTER" />
                                                                      </graphic>
                                                                      <tooltip>
-                                                                        <Tooltip text="ADD ADDRESS" />
+                                                                        <Tooltip text="Add new row for social media" />
                                                                      </tooltip>
                                                                            <GridPane.margin>
                                                                               <Insets />
@@ -873,7 +873,7 @@
                      <children>
                         <HBox fx:id="hbButtons" alignment="CENTER_LEFT" layoutY="18.0" prefHeight="51.0" prefWidth="678.0" spacing="3.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="0.0">
                            <children>
-                              <Button fx:id="btnSave" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@../css/StyleSheet.css" text="Okay">
+                              <Button fx:id="btnSave" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@StyleSheet.css" text="Okay">
                                  <graphic>
                                     <FontAwesomeIconView glyphName="SAVE" size="20" />
                                  </graphic>
@@ -881,7 +881,7 @@
                                     <Blend />
                                  </effect>
                               </Button>
-                              <Button fx:id="btnCancel" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@../css/StyleSheet.css" text="Cancel">
+                              <Button fx:id="btnCancel" ellipsisString="" graphicTextGap="7.0" maxHeight="70.0" mnemonicParsing="false" prefHeight="44.0" prefWidth="107.0" styleClass="button_process_dark" stylesheets="@StyleSheet.css" text="Cancel">
                                  <graphic>
                                     <FontAwesomeIconView glyphName="CLOSE" size="20" />
                                  </graphic>
