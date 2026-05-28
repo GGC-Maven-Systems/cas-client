@@ -856,6 +856,12 @@ public class ClientInfo extends Parameter{
                     return poJSON;
                 }
                 
+                //Check contact person existing supplier
+                poJSON = checkExistingCPSupplier(lsClientID);
+                if ("error".equals((String) poJSON.get("result"))){
+                    return poJSON;
+                }
+                
                 return poContactPerson.getModel().openRecord(lsClientID);
             } else {
                 poJSON = new JSONObject();
@@ -1325,6 +1331,47 @@ public class ClientInfo extends Parameter{
     
         poJSON.put("result", "success");
         poJSON.put("message", "success");
+        return poJSON;
+    }
+    
+    public JSONObject checkExistingCPSupplier(String fsClientId) throws SQLException, GuanzonException{
+        poJSON = new JSONObject();
+        boolean lbSuccess = false;
+        Model_Client_Master loClient = new ClientModels(poGRider).ClientMaster();
+        Model_Client_Institution_Contact loObj = new ClientModels(poGRider).ClientInstitutionContact();
+        loObj.initialize();
+        String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(loObj), " cCPrsonID = " + SQLUtil.toSQL(fsClientId)
+                                                + " AND sClientID != " + SQLUtil.toSQL(getModel().getClientId())
+                                                );
+        
+        System.out.println("Executing SQL: " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0) {
+                if(loRS.next()){
+                    if(loRS.getString("sClientID") != null && !"".equals(loRS.getString("sClientID"))){
+                        loClient.initialize();
+                        loClient.openRecord(loRS.getString("sClientID"));
+                        lbSuccess = false;
+                    }
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            System.out.println("No record loaded.");
+        }
+        if(lbSuccess){
+            poJSON.put("result", "success");
+            poJSON.put("message", "success");
+        } else {
+            poJSON.put("result", "error");
+            if(loClient.getEditMode() == EditMode.READY){
+                poJSON.put("message", "Select contact person already connected to the supplier.\n"
+                                        + "<" + loClient.getCompanyName() + "> Contact system administrator for assistance.");
+            } else { 
+                poJSON.put("message", "Select contact person already connected to the supplier");
+            }
+        }
         return poJSON;
     }
 
