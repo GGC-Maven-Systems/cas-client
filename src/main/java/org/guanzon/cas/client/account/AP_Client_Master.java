@@ -116,7 +116,7 @@ public class AP_Client_Master extends Parameter {
         }
         
         //change status
-        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sTransNox"),"", lsStatus, false,true);
+        poJSON = statusChange(getModel().getTable(), (String) getModel().getValue("sClientID"),"", lsStatus, false,true);
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
