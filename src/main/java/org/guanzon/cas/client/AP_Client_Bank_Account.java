@@ -148,9 +148,10 @@ public class AP_Client_Bank_Account  extends Parameter{
                 "xFullName»sBankName»sActNumbr»sActNamex",
                 "TRIM(IF(b.cClientTp = '0', CONCAT(b.sLastName, ', ', b.sFrstName, IF(TRIM(IFNull(b.sSuffixNm, '')) = '', ' ', CONCAT(' ', b.sSuffixNm, ' ')), b.sMiddName), b.sCompnyNm))»c.sBankName»a.sActNumbr»a.sActNamex",
                 byCode ? 2 : 3);
-
+            
         if (poJSON != null) {
-            return poModel.openRecord((String) poJSON.get("sBnkActID"));
+            System.out.println("JSON " + poJSON.toJSONString());
+            return poModel.openRecord((String) poJSON.get("sAPBnkIDx"));//sBnkActID
         } else {
             poJSON = new JSONObject();
             poJSON.put("result", "error");
@@ -182,10 +183,12 @@ public class AP_Client_Bank_Account  extends Parameter{
                     ", a.sBankIDxx" +
                     ", a.cRecdStat" +
                     ", TRIM(IF(b.cClientTp = '0', CONCAT(b.sLastName, ', ', b.sFrstName, IF(TRIM(IFNull(b.sSuffixNm, '')) = '', ' ', CONCAT(' ', b.sSuffixNm, ' ')), b.sMiddName), b.sCompnyNm)) xFullName" +
-                    ", IF(a.cPrimaryx = '1', 'Yes', 'No') xPrimaryx" +
+//                    ", IF(a.cPrimaryx = '1', 'Yes', 'No') xPrimaryx" +
                     ", c.sBankName" +
                 " FROM AP_Client_Bank_Account a" +
-                    ", Client_Master b" +
+//                    ", Client_Master b" +
+                "   LEFT JOIN Client_Master b ON b.sClientID = a.sClientID " +
+                " LEFT JOIN Banks c ON a.sBankIDxx = c.sBankIDxx " +
                 " WHERE a.sClientID = b.sClientID";
         System.out.println("get SQ BRowse == " + lsSQL);
         return MiscUtil.addCondition(lsSQL, lsCondition);
