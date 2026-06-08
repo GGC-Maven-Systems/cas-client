@@ -77,7 +77,7 @@ public class AP_Client_Bank_Account  extends Parameter{
                 "Company Name»Bank Name»Account Number»Account Name",
                 "xFullName»sBankName»sActNumbr»sActNamex",
                 "TRIM(IF(b.cClientTp = '0', CONCAT(b.sLastName, ', ', b.sFrstName, IF(TRIM(IFNull(b.sSuffixNm, '')) = '', ' ', CONCAT(' ', b.sSuffixNm, ' ')), b.sMiddName), b.sCompnyNm))»c.sBankName»a.sActNumbr»a.sActNamex",
-                byCode ? 5 : 1);
+                byCode ? 2 : 3);
 
         if (poJSON != null) {
             return poModel.openRecord((String) poJSON.get("sAPBnkIDx"));
