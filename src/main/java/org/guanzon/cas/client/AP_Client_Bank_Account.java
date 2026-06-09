@@ -77,7 +77,7 @@ public class AP_Client_Bank_Account  extends Parameter{
                 "Company Name»Bank Name»Account Number»Account Name",
                 "xFullName»sBankName»sActNumbr»sActNamex",
                 "TRIM(IF(b.cClientTp = '0', CONCAT(b.sLastName, ', ', b.sFrstName, IF(TRIM(IFNull(b.sSuffixNm, '')) = '', ' ', CONCAT(' ', b.sSuffixNm, ' ')), b.sMiddName), b.sCompnyNm))»c.sBankName»a.sActNumbr»a.sActNamex",
-                byCode ? 5 : 1);
+                byCode ? 2 : 3);
 
         if (poJSON != null) {
             return poModel.openRecord((String) poJSON.get("sAPBnkIDx"));
@@ -129,6 +129,37 @@ public class AP_Client_Bank_Account  extends Parameter{
         }
     }
     
+    //Arsiela 06-02-2026
+    //Search bank account filtered by bank id
+    public JSONObject searchRecordbyBanks(String value, String bankID, boolean byCode) throws SQLException, GuanzonException{
+        String lsSQL = "";
+        String lsCondition = "";
+
+        if (bankID != null && !bankID.isEmpty()) {
+            lsCondition = "a.sBankIDxx = " + SQLUtil.toSQL(bankID);
+        }
+
+         lsSQL = MiscUtil.addCondition(getSQ_Browse(), lsCondition);
+        System.out.println("SQL : " + lsSQL);
+        poJSON = ShowDialogFX.Search(poGRider,
+                lsSQL,
+                value,
+                "Company Name»Bank Name»Account Number»Account Name",
+                "xFullName»sBankName»sActNumbr»sActNamex",
+                "TRIM(IF(b.cClientTp = '0', CONCAT(b.sLastName, ', ', b.sFrstName, IF(TRIM(IFNull(b.sSuffixNm, '')) = '', ' ', CONCAT(' ', b.sSuffixNm, ' ')), b.sMiddName), b.sCompnyNm))»c.sBankName»a.sActNumbr»a.sActNamex",
+                byCode ? 2 : 3);
+            
+        if (poJSON != null) {
+            System.out.println("JSON " + poJSON.toJSONString());
+            return poModel.openRecord((String) poJSON.get("sAPBnkIDx"));//sBnkActID
+        } else {
+            poJSON = new JSONObject();
+            poJSON.put("result", "error");
+            poJSON.put("message", "No record loaded.");
+            return poJSON;
+        }
+    }
+    
     @Override
     public String getSQ_Browse(){
         String lsSQL;
@@ -152,10 +183,12 @@ public class AP_Client_Bank_Account  extends Parameter{
                     ", a.sBankIDxx" +
                     ", a.cRecdStat" +
                     ", TRIM(IF(b.cClientTp = '0', CONCAT(b.sLastName, ', ', b.sFrstName, IF(TRIM(IFNull(b.sSuffixNm, '')) = '', ' ', CONCAT(' ', b.sSuffixNm, ' ')), b.sMiddName), b.sCompnyNm)) xFullName" +
-                    ", IF(a.cPrimaryx = '1', 'Yes', 'No') xPrimaryx" +
+//                    ", IF(a.cPrimaryx = '1', 'Yes', 'No') xPrimaryx" +
                     ", c.sBankName" +
                 " FROM AP_Client_Bank_Account a" +
-                    ", Client_Master b" +
+//                    ", Client_Master b" +
+                "   LEFT JOIN Client_Master b ON b.sClientID = a.sClientID " +
+                " LEFT JOIN Banks c ON a.sBankIDxx = c.sBankIDxx " +
                 " WHERE a.sClientID = b.sClientID";
         System.out.println("get SQ BRowse == " + lsSQL);
         return MiscUtil.addCondition(lsSQL, lsCondition);
