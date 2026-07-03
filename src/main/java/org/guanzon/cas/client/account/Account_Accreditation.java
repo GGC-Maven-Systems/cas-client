@@ -1,19 +1,35 @@
 package org.guanzon.cas.client.account;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.sql.rowset.CachedRowSet;
-import org.apache.poi.hssf.record.Record;
+import org.apache.commons.codec.binary.Base64;
 import org.guanzon.appdriver.agent.ShowDialogFX;
 import org.guanzon.appdriver.agent.services.Parameter;
+import org.guanzon.appdriver.agent.systables.SysTableContollers;
+import org.guanzon.appdriver.agent.systables.TransactionAttachment;
 import org.guanzon.appdriver.base.CommonUtils;
+import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
+import org.guanzon.appdriver.base.MiscReplUtil;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
+import org.guanzon.appdriver.base.WebFile;
 import org.guanzon.appdriver.constant.ClientType;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
@@ -21,6 +37,7 @@ import org.guanzon.appdriver.constant.RecordStatus;
 import org.guanzon.appdriver.constant.TransactionStatus;
 import org.guanzon.appdriver.constant.UserRight;
 import org.guanzon.appdriver.iface.GValidator;
+import org.guanzon.appdriver.token.RequestAccess;
 import org.guanzon.cas.client.ClientGUI;
 import org.guanzon.cas.client.ClientInfo;
 import org.guanzon.cas.client.constants.AccountAccreditationStatus;
@@ -30,19 +47,23 @@ import org.guanzon.cas.client.model.Model_Client_Institution_Contact;
 import org.guanzon.cas.client.services.ClientControllers;
 import org.guanzon.cas.client.services.ClientModels;
 import org.guanzon.cas.client.validator.ClientAccreditationValidatorFactory;
-import org.guanzon.cas.parameter.Company;
 import org.guanzon.cas.parameter.model.Model_Company;
-import org.guanzon.cas.parameter.services.ParamControllers;
 import org.guanzon.cas.parameter.services.ParamModels;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import ph.com.guanzongroup.cas.cashflow.model.Model_Payee;
 import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
 
 public class Account_Accreditation extends Parameter {
-
+    private final String SOURCE_CODE = "APCL"; //Same acccount code for AP Client
+    
     private Model_Account_Client_Accreditation poModel;
     private String psValidStatus = AccountAccreditationStatus.OPEN;
     private String psApprovalUser = "";
+    
+    public List<TransactionAttachment> paAttachments;
+    private static JSONObject token = null;
 
     @Override
     public void initialize() throws SQLException, GuanzonException {
@@ -51,6 +72,7 @@ public class Account_Accreditation extends Parameter {
         ClientModels model = new ClientModels(poGRider);
         psRecdStat = TransactionStatus.STATE_OPEN;
         poModel = model.ClientAccreditation();
+        paAttachments = new ArrayList<>();
     }
 
     @Override
@@ -178,6 +200,475 @@ public class Account_Accreditation extends Parameter {
         }
 
         return lsSQL;
+    }
+    /**
+     * Prepares and validates the transaction data before committing to the database.This method performs final integrity checks, generates transaction numbers for new records,
+ prunes empty detail rows, and synchronizes metadata across master, details, and 
+ attachments.It also handles attachment filename collisions by renaming duplicates 
+ and triggers the file upload process for unsent attachments.
+     * 
+     * 
+     * @return A {@link JSONObject} indicating success or detailing validation/upload errors.
+     * @throws SQLException, GuanzonException, CloneNotSupportedException 
+     *          If an error occurs during data processing, file operations, or validation.
+     * @throws org.guanzon.appdriver.base.GuanzonException
+     */
+    @Override
+    protected JSONObject willSave() throws SQLException, GuanzonException {
+        poJSON = new JSONObject();
+        
+        //assign other info on attachment
+        for (int lnCtr = 0; lnCtr <= getTransactionAttachmentCount()- 1; lnCtr++) {
+            TransactionAttachmentList(lnCtr).getModel().setSourceNo(poModel.getClientId());
+            TransactionAttachmentList(lnCtr).getModel().setSourceCode(SOURCE_CODE);
+            TransactionAttachmentList(lnCtr).getModel().setBranchCode(poGRider.getBranchCode());
+            TransactionAttachmentList(lnCtr).getModel().setImagePath(System.getProperty("sys.default.path.temp.attachments"));
+
+            String lsOriginalFileName = TransactionAttachmentList(lnCtr).getModel().getFileName();
+            //Check existing file name in database
+            if(EditMode.ADDNEW == TransactionAttachmentList(lnCtr).getModel().getEditMode()){
+                int lnCopies = 0;
+                String fsFilePath = TransactionAttachmentList(lnCtr).getModel().getImagePath() + "/" + TransactionAttachmentList(lnCtr).getModel().getFileName();
+                String lsNewFileName = TransactionAttachmentList(lnCtr).getModel().getFileName();
+                while ("error".equals((String)checkExistingFileName(lsNewFileName).get("result"))) {
+                    lnCopies++;
+                    //Rename the file
+                    int dotIndex = TransactionAttachmentList(lnCtr).getModel().getFileName().lastIndexOf(".");
+                    if (dotIndex == -1) {
+                        lsNewFileName = TransactionAttachmentList(lnCtr).getModel().getFileName() +"_"+lnCopies;
+                    } else {
+                        lsNewFileName = TransactionAttachmentList(lnCtr).getModel().getFileName().substring(0, dotIndex) +"_"+ lnCopies +TransactionAttachmentList(lnCtr).getModel().getFileName().substring(dotIndex);
+                    }
+                }
+
+                if(lnCopies > 0){
+                    Path source = Paths.get(fsFilePath);
+                    try {
+                        // Copy file into the target directory with a new name
+                        Path target = Paths.get(System.getProperty("sys.default.path.temp.attachments")).resolve(lsNewFileName);
+                        Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);
+                        //check if file is existing
+                        int lnChecker = 0;
+                        File file = new File(TransactionAttachmentList(lnCtr).getModel().getImagePath() + "/" + lsNewFileName);
+                        while(!file.exists() && lnChecker < 5){
+                            Files.copy(source, target, StandardCopyOption.REPLACE_EXISTING);  
+                            System.out.println("Re-Copying... " + lnChecker);
+                            lnChecker++;
+                        }
+                        TransactionAttachmentList(lnCtr).getModel().setFileName(lsNewFileName);
+                        System.out.println("File copied successfully as " + lsNewFileName);
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            //Upload Attachment when send status is 0
+            try {
+                if("0".equals(TransactionAttachmentList(lnCtr).getModel().getSendStatus())){
+                    poJSON = uploadCASAttachments(poGRider, System.getProperty("sys.default.access.token"), lnCtr,lsOriginalFileName);
+                    if ("error".equals((String) poJSON.get("result"))) {
+                        return poJSON;
+                    }
+                }
+            } catch (Exception ex) {
+                Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+                poJSON = setJSON("error", MiscUtil.getException(ex));
+                return poJSON;
+            }
+        }
+        
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    
+    @Override
+    protected JSONObject saveOthers() throws SQLException, GuanzonException {
+        try {
+            //Save Attachments
+                System.out.println("-----------------------------SAVE TRANSACTION ATTACHMENT------------------------------------------");
+            for (int lnCtr = 0; lnCtr <= getTransactionAttachmentCount() - 1; lnCtr++) {
+                if (paAttachments.get(lnCtr).getEditMode() == EditMode.ADDNEW || paAttachments.get(lnCtr).getEditMode() == EditMode.UPDATE) {
+                    paAttachments.get(lnCtr).getModel().setModifyingId(poGRider.Encrypt(poGRider.getUserID()));
+                    paAttachments.get(lnCtr).getModel().setModifiedDate(poGRider.getServerDate());
+                    paAttachments.get(lnCtr).setWithParentClass(true);
+                    poJSON = paAttachments.get(lnCtr).saveRecord();
+                    if (!isJSONSuccess(poJSON)) {
+                        return poJSON;
+                    }
+                }
+            }
+            System.out.println("-----------------------------------------------------------------------");
+
+        } catch (SQLException | GuanzonException | CloneNotSupportedException  ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+        } catch (Exception ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+        }
+        
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    
+    /**
+     * Retrieves and downloads all attachments associated with the current transaction.
+     * 
+     * This method fetches attachment metadata from the system tables, populates the
+     * {@code paAttachments} collection, and performs a web download for each file. 
+     * Downloaded files are decoded from Base64 and saved to the system's temporary 
+     * attachment directory defined in the system properties.
+     * 
+     * @return A {@link JSONObject} indicating the overall success of the attachment loading process.
+     * @throws SQLException If a database error occurs while fetching attachment records.
+     * @throws GuanzonException If an error occurs during file synchronization or processing.
+     */
+    public JSONObject loadAttachments()
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+        paAttachments = new ArrayList<>();
+        String lsSourceCode = "";
+        TransactionAttachment loAttachment = new SysTableContollers(poGRider, null).TransactionAttachment();
+        List loList = loAttachment.getAttachments(SOURCE_CODE, getModel().getClientId());
+        lsSourceCode = SOURCE_CODE;
+        for (int lnCtr = 0; lnCtr <= loList.size() - 1; lnCtr++) {
+            paAttachments.add(TransactionAttachment());
+            poJSON = paAttachments.get(getTransactionAttachmentCount() - 1).openRecord((String) loList.get(lnCtr));
+            if (isJSONSuccess(poJSON)) {
+                if(getModel().getEditMode() == EditMode.UPDATE){
+                   poJSON = paAttachments.get(getTransactionAttachmentCount() - 1).updateRecord();
+                }
+                System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getTransactionNo());
+                System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getSourceNo());
+                System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getSourceCode());
+                System.out.println(paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getFileName());
+            }
+            
+            //Download Attachments
+            poJSON = WebFile.DownloadFile(WebFile.getAccessToken(System.getProperty("sys.default.access.token"))
+                    , "0032" //Constant
+                    , "" //Empty
+                    , paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getFileName()
+                    , lsSourceCode
+                    , paAttachments.get(getTransactionAttachmentCount() - 1).getModel().getSourceNo()
+                    , "");
+            if (isJSONSuccess(poJSON)) {
+                
+                poJSON = (JSONObject) poJSON.get("payload");
+                if(WebFile.Base64ToFile((String) poJSON.get("data")
+                        , (String) poJSON.get("hash")
+                        , System.getProperty("sys.default.path.temp.attachments") + "/"
+                        , (String) poJSON.get("filename"))){
+                    System.out.println("poJSON success: " +  poJSON.toJSONString());
+                    System.out.println("File downloaded succesfully.");
+                } else {
+                    poJSON = (JSONObject) poJSON.get("error");
+                    poJSON.put("result", "error");
+                    System.out.println("ERROR WebFile.DownloadFile: " + poJSON.get("message"));
+                    System.out.println("poJSON error WebFile.DownloadFile: " + poJSON.toJSONString());
+                }
+                
+            } else {
+                System.out.println("poJSON error WebFile.DownloadFile: " + poJSON.toJSONString());
+            }
+        }
+        
+        poJSON = setJSON("success","success");
+        return poJSON;
+    }
+    /**
+     * Instantiates a new TransactionAttachment controller.
+     */
+    private TransactionAttachment TransactionAttachment()
+            throws SQLException,
+            GuanzonException {
+        return new SysTableContollers(poGRider, null).TransactionAttachment();
+    }
+    /**
+     * Retrieves the attachment record at the specified index.
+     * @param row The zero-based index of the attachment.
+     */
+    public TransactionAttachment TransactionAttachmentList(int row) {
+        return (TransactionAttachment) paAttachments.get(row);
+    }
+    /**
+     * Returns the total count of attachments in the current list.
+     */
+    public int getTransactionAttachmentCount() {
+        if (paAttachments == null) {
+            paAttachments = new ArrayList<>();
+        }
+
+        return paAttachments.size();
+    }
+    /**
+     * Appends a new, empty attachment record to the collection.
+     * @return A {@link JSONObject} indicating the success of the addition.
+     * @throws SQLException, GuanzonException if initialization fails.
+     */    
+    public JSONObject addAttachment()
+            throws SQLException,
+            GuanzonException {
+        poJSON = new JSONObject();
+
+        if (paAttachments.isEmpty()) {
+            paAttachments.add(TransactionAttachment());
+            poJSON = paAttachments.get(getTransactionAttachmentCount() - 1).newRecord();
+        } else {
+            if (!paAttachments.get(paAttachments.size() - 1).getModel().getTransactionNo().isEmpty()) {
+                paAttachments.add(TransactionAttachment());
+            } else {
+                poJSON = setJSON("error", "Unable to add transaction attachment.");
+                return poJSON;
+            }
+        }
+        poJSON = setJSON("success", "success");
+        return poJSON;
+    }
+    /**
+     * Removes a new attachment or marks an existing one as Inactive.
+     * @param fnRow Index of the attachment to remove/deactivate.
+     * @return Result status as a {@link JSONObject}.
+     */    
+    public JSONObject removeAttachment(int fnRow) throws GuanzonException, SQLException{
+        poJSON = new JSONObject();
+        if(getTransactionAttachmentCount() <= 0){
+            poJSON = setJSON("error", "No transaction attachment to be removed.");
+            return poJSON;
+        }
+        
+        if(paAttachments.get(fnRow).getEditMode() == EditMode.ADDNEW){
+            paAttachments.remove(fnRow);
+            System.out.println("Attachment :"+ fnRow+" Removed");
+        } else {
+            paAttachments.get(fnRow).getModel().setRecordStatus(RecordStatus.INACTIVE);
+            System.out.println("Attachment :"+ fnRow+" Deactivate");
+        }
+        
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    /**
+     * Adds an attachment by filename or reactivates it if it already exists as Inactive.
+     * @param fFileName The name of the file to add.
+     * @return The index of the added or reactivated attachment.
+     */    
+    public int addAttachment(String fFileName) throws SQLException, GuanzonException{
+        for(int lnCtr = 0;lnCtr <= getTransactionAttachmentCount() - 1;lnCtr++){
+            if(fFileName.equals(paAttachments.get(lnCtr).getModel().getFileName())
+                && RecordStatus.INACTIVE.equals(paAttachments.get(lnCtr).getModel().getRecordStatus())){
+                paAttachments.get(lnCtr).getModel().setRecordStatus(RecordStatus.ACTIVE);
+                System.out.println("Attachment :"+ lnCtr+" Activate");
+                return lnCtr;
+            }
+        }
+        
+        addAttachment();
+        paAttachments.get(getTransactionAttachmentCount() - 1).getModel().setFileName(fFileName);
+        paAttachments.get(getTransactionAttachmentCount() - 1).getModel().setSourceNo(getModel().getClientId());
+        paAttachments.get(getTransactionAttachmentCount() - 1).getModel().setRecordStatus(RecordStatus.ACTIVE);
+        return getTransactionAttachmentCount() - 1;
+    }
+    
+    /**
+     * Copies a file from the source path to the system's temporary attachment directory.
+     * <p>
+     * Includes a retry mechanism that attempts to re-copy the file up to 5 times 
+     * if the target file is not immediately detected after the initial operation.
+     * 
+     * @param fsPath The absolute path of the source file to be copied.
+     */
+    public void copyFile(String fsPath){
+        Path source = Paths.get(fsPath);
+        Path targetDir = Paths.get(System.getProperty("sys.default.path.temp.attachments"));
+
+        try {
+            // Ensure target directory exists
+            if (!Files.exists(targetDir)) {
+                Files.createDirectories(targetDir);
+            }
+
+            // Copy file into the target directory
+            Files.copy(source, targetDir.resolve(source.getFileName()),
+                       StandardCopyOption.REPLACE_EXISTING);
+
+            //check if file is existing
+            int lnChecker = 0;
+            File file = new File(targetDir+ "/" + source.getFileName());
+            System.out.println("File Path : " + file.getPath());
+            while(!file.exists() && lnChecker < 5){
+                Files.copy(source, targetDir.resolve(source.getFileName()), StandardCopyOption.REPLACE_EXISTING);  
+                System.out.println("Re-Copying... " + lnChecker);
+                lnChecker++;
+            }
+            
+            if(!file.exists()){
+                System.out.println("File did not copy!");
+                return;
+            } else {
+                System.out.println("File copied successfully!");
+            } 
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Checks if a filename already exists in the attachment database records.
+     * 
+     * @param fsFileName The name of the file to validate.
+     * @return A {@link JSONObject} containing an error message if the filename exists, 
+     *         otherwise an empty success object.
+     * @throws SQLException, GuanzonException If a database access error occurs.
+     */
+    public JSONObject checkExistingFileName(String fsFileName) throws SQLException, GuanzonException{
+        poJSON = new JSONObject();
+        
+        String lsSQL = MiscUtil.addCondition(MiscUtil.makeSelect(TransactionAttachment().getModel()), 
+                                                                    " sFileName = " + SQLUtil.toSQL(fsFileName)
+                                                                    );
+        System.out.println("Executing SQL: " + lsSQL);
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        try {
+            if (MiscUtil.RecordCount(loRS) > 0) {
+                if(loRS.next()){
+                    if(loRS.getString("sFileName") != null && !"".equals(loRS.getString("sFileName"))){
+                        poJSON = setJSON("error", "File name already exist in database.\nTry changing the file name to upload.");
+                    }
+                }
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            System.out.println("No record loaded.");
+        }
+        return poJSON;
+    }
+    
+    /**
+     * Resets the other record to its default initial state.
+     */
+    public void resetOthers() {
+        paAttachments = new ArrayList<>();
+    }
+    
+    /**
+     * Uploads a specific transaction attachment to the web server.
+     * <p>
+     * This method verifies the file's existence (handling renames), generates an MD5 hash 
+     * for data integrity, and transmits the file via the {@link WebFile} API. Upon successful 
+     * upload, it updates the record's hash and sets the send status to "1" (Sent).
+     * 
+     * @param instance The application driver instance.
+     * @param access The access token for web service authentication.
+     * @param fnRow The index of the attachment in the local collection.
+     * @param fsOriginalFileName The original filename to use as a fallback if the new file is missing.
+     * @return A {@link JSONObject} containing the upload result status.
+     * @throws Exception If an error occurs during file reading, encoding, or web transmission.
+     */
+    public JSONObject uploadCASAttachments(GRiderCAS instance, String access, int fnRow, String fsOriginalFileName) throws Exception{       
+        poJSON = new JSONObject();
+        System.out.println("Uploading... : fsOriginalFileName : " + fsOriginalFileName);
+        System.out.println("New File Name... : " + paAttachments.get(fnRow).getModel().getFileName());
+        String hash;
+        String lsFile = paAttachments.get(fnRow).getModel().getFileName();
+        
+        //check if new file is existing
+        File file = new File(paAttachments.get(fnRow).getModel().getImagePath() + "/" + lsFile);
+        if(!file.exists()){
+            //check if original file is existing
+            lsFile = fsOriginalFileName;
+            file = new File(paAttachments.get(fnRow).getModel().getImagePath() + "/" + lsFile);
+            if(!file.exists()){
+                poJSON = setJSON("error", "Cannot locate file in " + paAttachments.get(fnRow).getModel().getImagePath() + "/" + lsFile
+                                        + ".\nContact system administrator for assistance.");
+                return poJSON;  
+            }
+        }
+
+        //check if file hash is not empty
+        hash = paAttachments.get(fnRow).getModel().getMD5Hash();
+        if(paAttachments.get(fnRow).getModel().getMD5Hash() == null || "".equals(paAttachments.get(fnRow).getModel().getMD5Hash())){
+            hash = MiscReplUtil.md5Hash(paAttachments.get(fnRow).getModel().getImagePath() + "/" + lsFile);
+        }
+
+        JSONObject result = WebFile.UploadFile(getAccessToken(access)
+                                , "0032"
+                                , ""
+                                , paAttachments.get(fnRow).getModel().getFileName()
+                                , instance.getBranchCode()
+                                , hash
+                                , encodeFileToBase64Binary(file)
+                                , paAttachments.get(fnRow).getModel().getSourceCode()
+                                , paAttachments.get(fnRow).getModel().getSourceNo()
+                                , "");
+
+        if("error".equalsIgnoreCase((String) result.get("result"))){
+            System.out.println("Upload Error : " + result.toJSONString());
+            System.out.println("Upload Error : " + paAttachments.get(fnRow).getModel().getFileName());
+                poJSON = setJSON("error", "System error while uploading file "+ paAttachments.get(fnRow).getModel().getFileName()
+                                    + ".\nContact system administrator for assistance.");
+            return poJSON;
+        }
+        paAttachments.get(fnRow).getModel().setMD5Hash(hash);
+        paAttachments.get(fnRow).getModel().setSendStatus("1");
+        System.out.println("Upload Success : " + paAttachments.get(fnRow).getModel().getFileName());
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
+    /**
+     * Converts a file's content into a Base64 encoded string.
+     * 
+     * @param file The file object to be encoded.
+     * @return A Base64 string representation of the file.
+     * @throws Exception If an I/O error occurs during file reading.
+     */
+    private static String encodeFileToBase64Binary(File file) throws Exception{
+         FileInputStream fileInputStreamReader = new FileInputStream(file);
+         byte[] bytes = new byte[(int)file.length()];
+         fileInputStreamReader.read(bytes);
+         return new String(Base64.encodeBase64(bytes), "UTF-8");
+     }
+         
+    /**
+     * Retrieves a valid access token, refreshing it if it has expired.
+     * <p>
+     * The token is considered stale if it was created more than 25 minutes ago. 
+     * If expired, it triggers an external request to update the token file before 
+     * returning the new access key.
+     * 
+     * @param access The file path to the JSON formatted token storage.
+     * @return The access key string, or {@code null} if the file cannot be read or parsed.
+     */
+    private static String getAccessToken(String access){
+        try {
+            JSONParser oParser = new JSONParser();
+            if(token == null){
+                token = (JSONObject)oParser.parse(new FileReader(access));
+            }
+            
+            Calendar current_date = Calendar.getInstance();
+            current_date.add(Calendar.MINUTE, -25);
+            Calendar date_created = Calendar.getInstance();
+            date_created.setTime(SQLUtil.toDate((String) token.get("created") , SQLUtil.FORMAT_TIMESTAMP));
+            
+            //Check if token is still valid within the time frame
+            //Request new access token if not in the current period range
+            if(current_date.after(date_created)){
+                String[] xargs = new String[] {(String) token.get("parent"), access};
+                RequestAccess.main(xargs);
+                token = (JSONObject)oParser.parse(new FileReader(access));
+            }
+            
+            return (String)token.get("access_key");
+        } catch (IOException ex) {
+            return null;
+        } catch (ParseException ex) {
+            return null;
+        }
     }
     
     public AP_Client_Master getAPClientMaster(String foClientID)
@@ -911,5 +1402,31 @@ public class Account_Accreditation extends Parameter {
           poJSON.put("message", e.getMessage());
         } 
         return lsEntry;
+    }
+    
+    /**
+    * Creates a JSONObject with "result" and "message" fields.
+    *
+    * @param fsResult  The result value (e.g., "success", "error")
+    * @param fsMessage The message describing the result
+    * @return JSONObject containing the result and message
+    */
+    private JSONObject setJSON(String fsResult, String fsMessage) {
+        JSONObject loJSON = new JSONObject();
+        loJSON.put("result", fsResult);
+        loJSON.put("message", fsMessage);
+        return loJSON;
+    }
+
+    /**
+     * Checks whether a JSONObject indicates a successful result.
+     *
+     * Returns true if the "result" field equals "success" or is not "error".
+     *
+     * @param foJSON The JSONObject to check
+     * @return true if successful, false otherwise
+     */
+    public boolean isJSONSuccess(JSONObject foJSON) {
+        return ("success".equals((String) foJSON.get("result")) || !"error".equals((String) foJSON.get("result")));
     }
 }
