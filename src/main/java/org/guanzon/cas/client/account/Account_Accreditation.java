@@ -56,13 +56,13 @@ import ph.com.guanzongroup.cas.cashflow.model.Model_Payee;
 import ph.com.guanzongroup.cas.cashflow.services.CashflowModels;
 
 public class Account_Accreditation extends Parameter {
-    private final String SOURCE_CODE = "APCL"; //Same acccount code for AP Client
+    private final String SOURCE_CODE = "APCL"; //Same acccount code for AP Client; Arsiela 07-03-2026
     
     private Model_Account_Client_Accreditation poModel;
     private String psValidStatus = AccountAccreditationStatus.OPEN;
     private String psApprovalUser = "";
     
-    public List<TransactionAttachment> paAttachments;
+    public List<TransactionAttachment> paAttachments; //Added functionality for Attachement; Arsiela 07-03-2026
     private static JSONObject token = null;
 
     @Override
