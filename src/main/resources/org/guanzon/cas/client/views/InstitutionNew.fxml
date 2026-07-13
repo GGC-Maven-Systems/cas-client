@@ -216,7 +216,7 @@
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin>
                                                                         </TextField>
-                                                                        <TextField fx:id="txtAddress06" maxWidth="501.0" minWidth="150.0" prefHeight="30.0" prefWidth="501.0" promptText="XXX-XX-XXXX" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1">
+                                                                        <TextField fx:id="txtAddress06" maxWidth="501.0" minWidth="150.0" prefHeight="30.0" prefWidth="501.0" promptText="XXX-XXX-XXX-XXX" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin>
