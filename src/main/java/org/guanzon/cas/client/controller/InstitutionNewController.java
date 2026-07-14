@@ -513,13 +513,11 @@ public class InstitutionNewController implements Initializable {
                     break;
 
                 case 6: //tax id number
-
-                    String lsTinPattern = "^\\d{3}-\\d{2}-\\d{4}$";
+                    String lsTinPattern = "^\\d{3}-\\d{3}-\\d{3}-\\d{3}$";
                     if (!lsValue.matches(lsTinPattern)) {
                         ShowMessageFX.Warning(getStage(), "TIN Number is invalid", "Warning", MODULE);
                         return;
                     }
-
                     poJSON = poClient.getModel().setTaxIdNumber(lsValue);
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
@@ -696,7 +694,7 @@ public class InstitutionNewController implements Initializable {
     }
 
     private void initFields() {
-        applyMask("XXX-XX-XXXX", txtAddress06);
+        applyMask("XXX-XXX-XXX-XXX", txtAddress06);
         txtAddress00.focusedProperty().addListener(txtAddress_Focus);
         txtAddress01.focusedProperty().addListener(txtAddress_Focus);
         txtAddress02.focusedProperty().addListener(txtAddress_Focus);
@@ -1447,7 +1445,7 @@ public class InstitutionNewController implements Initializable {
                 }
 
             } else if (maskChar == '-') {
-                if (digitIndex > 0 && digitIndex < digitsOnly.length() + 1) {
+                if (digitIndex > 0 && digitIndex < digitsOnly.length()) {
                     formatted.append("-");
                 }
             }

@@ -703,16 +703,16 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(poClient.getModel().getMothersMaidenName());
                     break;
                 case 13:
-
-                    String lsTinPattern = "^\\d{3}-\\d{2}-\\d{4}$";
-                    if (!lsValue.matches(lsTinPattern)) {
+                    String lsTinPattern = "^\\d{3}-\\d{3}-\\d{3}$";
+                    String lsTinPattern1 = "^\\d{3}-\\d{3}-\\d{3}-\\d{3}$";
+                    if (!lsValue.matches(lsTinPattern) && !lsValue.matches(lsTinPattern1)) {
                         ShowMessageFX.Warning(getStage(), "TIN Number is invalid", "Warning", MODULE);
                         return;
                     }
-
                     poJSON = poClient.getModel().setTaxIdNumber(lsValue);
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                        return;
                     }
 
                     txtField.setText(poClient.getModel().getTaxIdNumber());
@@ -1132,7 +1132,7 @@ public class IndividualNewController implements Initializable {
     }
 
     private void initFields() {
-        applyMask("XXX-XX-XXXX", txtPersonal13);
+        applyMask("XXX-XXX-XXX-XXX", txtPersonal13); //Default mask
         applyMask("XXX-XX-XXXXXX", txtPersonal15);
 
         txtPersonal02.focusedProperty().addListener(txtPersonal_Focus);
@@ -2085,7 +2085,7 @@ public class IndividualNewController implements Initializable {
                 }
 
             } else if (maskChar == '-') {
-                if (digitIndex > 0 && digitIndex < digitsOnly.length() + 1) {
+                if (digitIndex > 0 && digitIndex < digitsOnly.length()) {
                     formatted.append("-");
                 }
             }
