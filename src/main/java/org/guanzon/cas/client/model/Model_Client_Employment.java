@@ -139,7 +139,7 @@ public class Model_Client_Employment extends Model{
     
     @Override
     public String getNextCode(){
-        return getClientId();
+        return "";
     }
     
     public Model_Client_Master Client() throws SQLException, GuanzonException{
