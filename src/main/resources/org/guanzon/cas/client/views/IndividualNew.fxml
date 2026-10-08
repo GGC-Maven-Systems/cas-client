@@ -126,10 +126,10 @@
                                                                <children>
                                                                   <GridPane hgap="2.0" layoutX="-37.0" layoutY="13.0" vgap="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                      <columnConstraints>
-                                                                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" prefWidth="80.0" />
+                                                                        <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" prefWidth="110.0" />
                                                                         <ColumnConstraints hgrow="SOMETIMES" prefWidth="80.0" />
                                                                         <ColumnConstraints hgrow="SOMETIMES" prefWidth="80.0" />
-                                                                        <ColumnConstraints hgrow="SOMETIMES" prefWidth="80.0" />
+                                                                        <ColumnConstraints hgrow="SOMETIMES" prefWidth="60.0" />
                                                                         <ColumnConstraints hgrow="SOMETIMES" minWidth="30.0" />
                                                                         <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" prefWidth="80.0" />
                                                                         <ColumnConstraints hgrow="SOMETIMES" maxWidth="97.0" minWidth="75.0" prefWidth="75.0" />
@@ -146,8 +146,10 @@
                                                                         <RowConstraints minHeight="27.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                                         <RowConstraints minHeight="10.0" vgrow="SOMETIMES" />
                                                                         <RowConstraints minHeight="27.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                                                                        <RowConstraints minHeight="27.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                                                        <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="15.0" vgrow="SOMETIMES" />
                                                                         <RowConstraints minHeight="27.0" prefHeight="27.0" vgrow="SOMETIMES" />
+                                                                        <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="28.0" vgrow="SOMETIMES" />
+                                                                        <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="28.0" vgrow="SOMETIMES" />
                                                                      </rowConstraints>
                                                                      <children>
                                                                         <TextField fx:id="txtPersonal02" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="2">
@@ -210,7 +212,7 @@
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin>
                                                                         </TextField>
-                                                                        <TextField fx:id="txtPersonal15" maxWidth="200.0" minWidth="150.0" promptText="XXX-XX-XXXXXX" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="9">
+                                                                        <TextField fx:id="txtPersonal15" minWidth="150.0" promptText="XXX-XX-XXXXXX" styleClass="text-field" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="8">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin>
@@ -315,7 +317,7 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <Text layoutX="27.0" layoutY="190.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="National ID" GridPane.rowIndex="9">
+                                                                        <Text layoutX="27.0" layoutY="190.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="National ID" GridPane.columnIndex="5" GridPane.rowIndex="8">
                                                                            <font>
                                                                               <Font size="14.0" />
                                                                            </font>
@@ -325,6 +327,71 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
+                                                                        <Text layoutX="44.0" layoutY="252.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Source of Income" GridPane.rowIndex="10">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <Separator prefWidth="200.0" GridPane.columnSpan="8" GridPane.rowIndex="9" />
+                                                                        <Text layoutX="-18.0" layoutY="299.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Year's at Current Address" GridPane.columnIndex="5" GridPane.rowIndex="3">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <TextField fx:id="tfYrsAddress" alignment="CENTER_RIGHT" layoutX="97.0" layoutY="114.0" prefWidth="167.0" promptText="0" styleClass="text-field" GridPane.columnIndex="6" GridPane.rowIndex="3">
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin>
+                                                                        </TextField>
+                                                                        <TextField fx:id="tfOfficeAddress" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="11">
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin></TextField>
+                                                                        <Text layoutX="342.0" layoutY="299.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="No. of Dependent" GridPane.rowIndex="12">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <TextField fx:id="tfNoDependent" layoutX="457.0" layoutY="114.0" prefWidth="167.0" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="12">
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin></TextField>
+                                                                        <Text layoutX="342.0" layoutY="299.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Emp. / Business Name" GridPane.columnIndex="5" GridPane.rowIndex="10">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <TextField fx:id="tfSourceOfIncome" layoutX="452.0" layoutY="281.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="10">
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin></TextField>
+                                                                        <Text layoutX="-27.0" layoutY="299.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Office Address" GridPane.columnIndex="5" GridPane.rowIndex="11">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <TextField fx:id="tfEmpBusName" layoutX="112.0" layoutY="281.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="10">
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin></TextField>
+                                                                        <Text layoutX="60.0" layoutY="328.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Position" GridPane.rowIndex="11">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <TextField fx:id="tfPosition" layoutX="112.0" layoutY="311.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="11">
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin></TextField>
+                                                                        <Text layoutX="400.0" layoutY="329.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Office Email" GridPane.columnIndex="5" GridPane.rowIndex="12">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <TextField fx:id="tfOfficeEmail" layoutX="452.0" layoutY="311.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="12">
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin></TextField>
                                                                      </children>
                                                                      <padding>
                                                                         <Insets top="5.0" />
