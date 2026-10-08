@@ -53,12 +53,15 @@ public class Model_Client_Employment extends Model{
         return (String) getValue("sClientID");
     }
     
-    public JSONObject setAddressYears(Number addressYears){
+    public JSONObject setAddressYears(Double addressYears) {
         return setValue("nAddrYrsx", addressYears);
     }
 
-    public Number getAddressYears(){
-        return (Number) getValue("nAddrYrsx");
+    public Double getAddressYears() {
+        if (getValue("nAddrYrsx") == null || "".equals(getValue("nAddrYrsx"))) {
+            return 0.0000;
+        }
+        return Double.valueOf(getValue("nAddrYrsx").toString());
     }
 
     public JSONObject setIncomeSource(String incomeSource){
@@ -69,12 +72,15 @@ public class Model_Client_Employment extends Model{
         return (String) getValue("sIncomSrc");
     }
 
-    public JSONObject setDependents(Number dependents){
+    public JSONObject setDependents(int dependents) {
         return setValue("nDependnt", dependents);
     }
 
-    public Number getDependents(){
-        return (Number) getValue("nDependnt");
+    public int getDependents() {
+        if (getValue("nDependnt") == null || "".equals(getValue("nDependnt"))) {
+            return 0;
+        }
+        return (int) getValue("nDependnt");
     }
 
     public JSONObject setEmployerName(String employerName){
@@ -108,21 +114,27 @@ public class Model_Client_Employment extends Model{
     public String getPosition(){
         return (String) getValue("sPosition");
     }
-
-    public JSONObject setWorkYears(Number workYears){
+    
+    public JSONObject setWorkYears(Double workYears) {
         return setValue("nWorkYrsx", workYears);
     }
 
-    public Number getWorkYears(){
-        return (Number) getValue("nWorkYrsx");
+    public Double getWorkYears() {
+        if (getValue("nWorkYrsx") == null || "".equals(getValue("nWorkYrsx"))) {
+            return 0.0000;
+        }
+        return Double.valueOf(getValue("nWorkYrsx").toString());
     }
-
-    public JSONObject setGrossIncome(Number grossIncome){
+    
+    public JSONObject setGrossIncome(Double grossIncome) {
         return setValue("nGrossInc", grossIncome);
     }
 
-    public Number getGrossIncome(){
-        return (Number) getValue("nGrossInc");
+    public Double getGrossIncome() {
+        if (getValue("nGrossInc") == null || "".equals(getValue("nGrossInc"))) {
+            return 0.0000;
+        }
+        return Double.valueOf(getValue("nGrossInc").toString());
     }
     
     @Override
