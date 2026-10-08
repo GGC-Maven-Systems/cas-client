@@ -591,6 +591,7 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(poClient.getModel().getPhNationalId());
                     break;
                 case 16:
+                    lsValue = removeComma(lsValue);
                     poJSON = poClient.ClientEmployment().setAddressYears(Double.parseDouble(lsValue));
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
@@ -612,6 +613,7 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(String.valueOf(poClient.ClientEmployment().getPosition()));
                     break;
                 case 19:
+                    lsValue = removeComma(lsValue);
                     poJSON = poClient.ClientEmployment().setDependents(Integer.parseInt(lsValue));
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
@@ -645,6 +647,21 @@ public class IndividualNewController implements Initializable {
         }
     };
 
+    public static String removeComma(String numberStr) {
+        if (numberStr == null || numberStr.isEmpty()) {
+            return "0";
+        }
+
+        // Remove commas
+        String clean = numberStr.replace(",", "");
+
+        // Check if it's exactly negative zero
+        if (clean.matches("-0+(\\.0+)?")) {
+            return "0";
+        }
+
+        return clean.isEmpty() ? "0" : clean;
+    }
     final ChangeListener<? super Boolean> txtAddress_Focus = (o, ov, nv) -> {
         if (!pbLoaded) {
             return;
