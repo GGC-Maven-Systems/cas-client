@@ -4,6 +4,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.guanzon.appdriver.base.GRiderCAS;
 import org.guanzon.appdriver.base.GuanzonException;
 import org.guanzon.appdriver.base.LogWrapper;
@@ -30,6 +32,8 @@ public class Client {
     Client_Master poClient;    
     Client_Address poClientAddress;
     Client_Institution_Contact poClientIns;
+    Client_Employment poClientEmployment;
+    
     List<Client_Mobile> poMobile;
     List<Client_Address> poAddress;
     List<Client_Mail> poMail;
@@ -64,6 +68,11 @@ public class Client {
         poClientIns.setApplicationDriver(poGRider);
         poClientIns.setWithParentClass(true);
         poClientIns.initialize();
+        
+        poClientEmployment = new Client_Employment();
+        poClientEmployment.setApplicationDriver(poGRider);
+        poClientEmployment.setWithParentClass(true);
+        poClientEmployment.initialize();
 
         poMobile = new ArrayList<>();
         poAddress = new ArrayList<>();
@@ -153,6 +162,10 @@ public class Client {
 
     public Client_Institution_Contact ClientInstitutionContact() {
         return poClientIns;
+    }
+
+    public Client_Employment ClientEmployment() {
+        return poClientEmployment;
     }
     
     public Client_Mobile Mobile(int row) {
@@ -461,6 +474,47 @@ public class Client {
         return poJSON;
     }
     
+    public JSONObject OpenClientEmployment(String fsValue) throws SQLException, GuanzonException{
+        String lsSQL = "SELECT" +
+                    "  sClientID," +
+                    "  nAddrYrsx," +
+                    "  sIncomSrc," +
+                    "  nDependnt," +
+                    "  sEmployNm," +
+                    "  sBusAddrs," +
+                    "  sOffEmail," +
+                    "  sPosition," +
+                    "  nWorkYrsx," +
+                    "  nGrossInc" +
+                    "FROM Client_Employment" ;
+        lsSQL = MiscUtil.addCondition(lsSQL, "sClientID = " + SQLUtil.toSQL(fsValue));
+        ResultSet loRS = poGRider.executeQuery(lsSQL);
+        
+        System.out.println(lsSQL);
+        try {
+           
+            if(poClientEmployment == null){
+                poClientEmployment = new Client_Employment();
+            }
+            if (MiscUtil.RecordCount(loRS) > 0) {
+                if(loRS.next()){
+                    poClientEmployment.openRecord(loRS.getString("sClientID"));
+
+                    try{
+                        poJSON.put("result", "success");
+                        poJSON.put("message", "Record loaded successfully.");
+                    }catch(Exception e){
+                    }
+                } 
+            }
+            MiscUtil.close(loRS);
+        } catch (SQLException e) {
+            poJSON.put("result", "error");
+            poJSON.put("message", e.getMessage());
+        }
+        return poJSON;
+    }
+    
     public JSONObject addAddress() throws SQLException, GuanzonException{
         poJSON = new JSONObject();
 
@@ -668,6 +722,11 @@ public class Client {
             return poJSON;
         }
         
+        poJSON = updateClientEmployment(); 
+        if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
         poJSON = new JSONObject();
         poJSON.put("result", "success");
         return poJSON;
@@ -723,6 +782,28 @@ public class Client {
         return poJSON;
     }
     
+    public JSONObject updateClientEmployment(){
+        try {
+            if(poClientEmployment == null){
+                poClientEmployment = new Client_Employment();
+            }
+            
+            if(poClientEmployment.getEditMode() == EditMode.READY){
+                poJSON =  poClientEmployment.updateRecord();
+            } else {
+                poClientEmployment.setApplicationDriver(poGRider);
+                poClientEmployment.setWithParentClass(true);
+                poClientEmployment.initialize();
+                poJSON =  poClientEmployment.newRecord();
+            }
+            
+        } catch (SQLException | GuanzonException ex) {
+            Logger.getLogger(getClass().getName()).log(Level.SEVERE, MiscUtil.getException(ex), ex);
+        }
+        poJSON.put("result", "success");
+        return poJSON;
+    }
+    
     
     public JSONObject New() throws SQLException, GuanzonException{
         poJSON = poClient.newRecord();
@@ -756,6 +837,15 @@ public class Client {
 
         poInsContact.clear();
         poJSON = addInsContactPerson();
+        if (!"success".equals((String) poJSON.get("result"))) {
+            return poJSON;
+        }
+        
+        poClientEmployment = new Client_Employment();
+        poClientEmployment.setApplicationDriver(poGRider);
+        poClientEmployment.setWithParentClass(true);
+        poClientEmployment.initialize();
+        poJSON = poClientEmployment.newRecord();
         if (!"success".equals((String) poJSON.get("result"))) {
             return poJSON;
         }
@@ -915,6 +1005,19 @@ public class Client {
                         }
                         return poJSON;
                     }
+                }
+            }
+        }
+        
+        if(poClientEmployment != null){
+            if(poClientEmployment.getEditMode() == EditMode.ADDNEW || poClientEmployment.getEditMode() == EditMode.UPDATE){
+                poClientEmployment.getModel().setClientId(poClient.getModel().getClientId());//save
+                poJSON = poClientEmployment.saveRecord();
+                if (!"success".equals((String) poJSON.get("result"))) {
+                    if (psParent.isEmpty()) {
+                        poGRider.rollbackTrans();
+                    }
+                    return poJSON;
                 }
             }
         }
