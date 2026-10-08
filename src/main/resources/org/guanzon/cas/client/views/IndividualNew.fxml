@@ -113,7 +113,7 @@
                                  <center>
                                     <AnchorPane BorderPane.alignment="CENTER">
                                        <children>
-                                                      <AnchorPane layoutX="15.0" layoutY="15.0" prefHeight="408.0" prefWidth="688.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                      <AnchorPane layoutX="15.0" layoutY="15.0" prefHeight="450.0" prefWidth="688.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                           <children>
                                                               <TabPane fx:id="TabPane" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                   <tabs>
@@ -148,6 +148,7 @@
                                                                         <RowConstraints minHeight="27.0" prefHeight="30.0" vgrow="SOMETIMES" />
                                                                         <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="15.0" vgrow="SOMETIMES" />
                                                                         <RowConstraints minHeight="27.0" prefHeight="27.0" vgrow="SOMETIMES" />
+                                                                        <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="28.0" vgrow="SOMETIMES" />
                                                                         <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="28.0" vgrow="SOMETIMES" />
                                                                         <RowConstraints maxHeight="-Infinity" minHeight="-Infinity" prefHeight="28.0" vgrow="SOMETIMES" />
                                                                      </rowConstraints>
@@ -347,12 +348,12 @@
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
-                                                                        <Text layoutX="342.0" layoutY="299.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="No. of Dependent" GridPane.rowIndex="12">
+                                                                        <Text layoutX="342.0" layoutY="299.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="Year's at work" GridPane.rowIndex="12">
                                                                            <font>
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <TextField fx:id="txtPersonal19" layoutX="457.0" layoutY="114.0" prefWidth="167.0" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="12">
+                                                                        <TextField fx:id="txtPersonal19" layoutX="457.0" layoutY="114.0" prefWidth="167.0" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="13">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
@@ -392,6 +393,19 @@
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
+                                                                        <Text layoutX="26.0" layoutY="357.0" strokeType="OUTSIDE" strokeWidth="0.0" styleClass="label" text="No. of Dependent" GridPane.rowIndex="13">
+                                                                           <font>
+                                                                              <Font size="14.0" />
+                                                                           </font>
+                                                                        </Text>
+                                                                        <TextField fx:id="txtPersonal23" layoutX="127.0" layoutY="309.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="12">
+                                                                           <opaqueInsets>
+                                                                              <Insets />
+                                                                           </opaqueInsets>
+                                                                           <GridPane.margin>
+                                                                              <Insets left="5.0" />
+                                                                           </GridPane.margin>
+                                                                        </TextField>
                                                                      </children>
                                                                      <padding>
                                                                         <Insets top="5.0" />
@@ -405,7 +419,7 @@
                                                    <content>
                                                       <AnchorPane fx:id="anchorAddress">
                                                          <children>
-                                                            <TableView fx:id="tblAddress" layoutX="20.0" layoutY="210.0" prefHeight="180.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="180.0">
+                                                            <TableView fx:id="tblAddress" layoutX="20.0" layoutY="210.0" prefHeight="221.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="5.0" AnchorPane.rightAnchor="5.0" AnchorPane.topAnchor="180.0">
                                                                <columns>
                                                                   <TableColumn fx:id="indexAddress01" maxWidth="1.7976931348623157E308" minWidth="-1.0" prefWidth="35.0" text="No." />
                                                                   <TableColumn fx:id="indexAddress02" prefWidth="75.0" text="House No." />
