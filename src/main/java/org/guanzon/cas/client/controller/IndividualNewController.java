@@ -10,8 +10,10 @@ import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -31,6 +33,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import static javafx.scene.input.KeyCode.DOWN;
@@ -64,193 +67,40 @@ import org.json.simple.JSONObject;
 import javafx.util.StringConverter;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
+import ph.com.guanzongroup.cas.cashflow.utility.TextFormaterUtil;
 
 public class IndividualNewController implements Initializable {
 
     @FXML
-    private AnchorPane AnchorMain;
+    private AnchorPane AnchorMain, anchorPersonal, anchorAddress, anchorMobile, anchorEmail, anchorSocMed, draggablePane;
     @FXML
-    private AnchorPane draggablePane;
+    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
     @FXML
-    private Button btnExit;
-    @FXML
-    private FontAwesomeIconView glyphExit;
-    @FXML
-    private HBox hbButtons;
-    @FXML
-    private Button btnSave;
-    @FXML
-    private Button btnCancel;
-    @FXML
-    private TextField txtField01;
-    @FXML
-    private TextField txtField02;
-    @FXML
-    private TextArea txtField03;
-    @FXML
-    private TabPane TabPane;
-    @FXML
-    private Tab PersonalInfo;
-    @FXML
-    private TextField txtPersonal02;
-    @FXML
-    private TextField txtPersonal03;
-    @FXML
-    private TextField txtPersonal04;
-    @FXML
-    private TextField txtPersonal05;
-    @FXML
-    private TextField txtPersonal06;
-    @FXML
-    private DatePicker txtPersonal07;
-    @FXML
-    private TextField txtPersonal08;
-    @FXML
-    private ComboBox cmbPersonal09;
-    @FXML
-    private ComboBox cmbPersonal10;
-    @FXML
-    private TextField txtPersonal11;
-    @FXML
-    private TextField txtPersonal12;
-    @FXML
-    private TextField txtPersonal13;
-    @FXML
-    private TextField txtPersonal15;
-    @FXML
-    private TextField txtPersonal14;
+    private TextArea txtField03, txtSocial02;
     @FXML
     private Label lblClientStatus;
     @FXML
-    private Tab Address;
+    private TabPane TabPane;
     @FXML
-    private AnchorPane anchorPersonal;
+    private Tab PersonalInfo, Address, Mobile, Email, SocialMedia;
     @FXML
-    private AnchorPane anchorAddress;
+    private DatePicker txtPersonal07;
     @FXML
-    private AnchorPane anchorMobile;
+    private ComboBox cmbPersonal09, cmbPersonal10, cmbMobile01, cmbMobile02, cmbEmail01, cmbSocMed01;
     @FXML
-    private AnchorPane anchorEmail;
+    private TableView tblAddress, tblMobile, tblEmail, tblSocMed;
     @FXML
-    private AnchorPane anchorSocMed;
+    private TableColumn indexAddress01, indexAddress02, indexAddress03, indexAddress04, indexAddress05, indexMobileNo01, indexMobileNo02, indexMobileNo03, indexMobileNo04, indexEmail01, indexEmail02, indexEmail03, indexSocMed01, indexSocMed02, indexSocMed03, indexSocMed04;
     @FXML
-    private GridPane gridAddress;
+    private GridPane gridAddress, gridMobile, gridEmail, gridSocMed;
     @FXML
-    private GridPane gridMobile;
+    private CheckBox cbAddress01, cbAddress02, cbAddress07, cbAddress03, cbAddress04, cbAddress06, cbAddress05, cbAddress08, cbMobileNo01, cbMobileNo02, cbEmail01, cbEmail02, cbSocMed01;
     @FXML
-    private GridPane gridEmail;
+    private Button btnAddAddress, btnAddMobile, btnAddEmail, btnAddSocMed, btnSave, btnCancel, btnExit;
     @FXML
-    private GridPane gridSocMed;
+    private HBox hbButtons;
     @FXML
-    private TableView tblAddress;
-    @FXML
-    private TableColumn indexAddress01;
-    @FXML
-    private TableColumn indexAddress02;
-    @FXML
-    private TableColumn indexAddress03;
-    @FXML
-    private TableColumn indexAddress04;
-    @FXML
-    private TableColumn indexAddress05;
-    @FXML
-    private TextField txtAddress03;
-    @FXML
-    private TextField txtAddress04;
-    @FXML
-    private TextField txtAddress05;
-    @FXML
-    private TextField txtAddress01;
-    @FXML
-    private TextField txtAddress02;
-    @FXML
-    private TextField txtAddress06;
-    @FXML
-    private TextField txtAddress07;
-    @FXML
-    private CheckBox cbAddress01;
-    @FXML
-    private CheckBox cbAddress02;
-    @FXML
-    private CheckBox cbAddress03;
-    @FXML
-    private CheckBox cbAddress04;
-    @FXML
-    private CheckBox cbAddress05;
-    @FXML
-    private CheckBox cbAddress06;
-    @FXML
-    private CheckBox cbAddress07;
-    @FXML
-    private CheckBox cbAddress08;
-    @FXML
-    private Button btnAddAddress;
-    @FXML
-    private Tab Mobile;
-    @FXML
-    private ComboBox cmbMobile01;
-    @FXML
-    private ComboBox cmbMobile02;
-    @FXML
-    private TextField txtMobile01;
-    @FXML
-    private CheckBox cbMobileNo01;
-    @FXML
-    private CheckBox cbMobileNo02;
-    @FXML
-    private Button btnAddMobile;
-    @FXML
-    private TableView tblMobile;
-    @FXML
-    private TableColumn indexMobileNo01;
-    @FXML
-    private TableColumn indexMobileNo02;
-    @FXML
-    private TableColumn indexMobileNo03;
-    @FXML
-    private TableColumn indexMobileNo04;
-    @FXML
-    private Tab Email;
-    @FXML
-    private ComboBox cmbEmail01;
-    @FXML
-    private TextField txtEmail01;
-    @FXML
-    private CheckBox cbEmail01;
-    @FXML
-    private CheckBox cbEmail02;
-    @FXML
-    private Button btnAddEmail;
-    @FXML
-    private TableView tblEmail;
-    @FXML
-    private TableColumn indexEmail01;
-    @FXML
-    private TableColumn indexEmail02;
-    @FXML
-    private TableColumn indexEmail03;
-    @FXML
-    private Tab SocialMedia;
-    @FXML
-    private ComboBox cmbSocMed01;
-    @FXML
-    private TextField txtSocial01;
-    @FXML
-    private TextArea txtSocial02;
-    @FXML
-    private CheckBox cbSocMed01;
-    @FXML
-    private Button btnAddSocMed;
-    @FXML
-    private TableView tblSocMed;
-    @FXML
-    private TableColumn indexSocMed01;
-    @FXML
-    private TableColumn indexSocMed02;
-    @FXML
-    private TableColumn indexSocMed03;
-    @FXML
-    private TableColumn indexSocMed04;
+    private FontAwesomeIconView glyphExit;
 
     private final String MODULE = "Client Controller";
     private GRiderCAS poGRider;
@@ -727,7 +577,6 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(poClient.getModel().getLTOClientId());
                     break;
                 case 15:
-
                     String lsNatlIDPattern = "^\\d{3}-\\d{2}-\\d{6}$";
                     if (!lsValue.matches(lsNatlIDPattern)) {
                         ShowMessageFX.Warning(getStage(), "National ID is invalid", "Warning", MODULE);
@@ -740,6 +589,55 @@ public class IndividualNewController implements Initializable {
                     }
 
                     txtField.setText(poClient.getModel().getPhNationalId());
+                    break;
+                case 16:
+                    poJSON = poClient.ClientEmployment().setAddressYears(Double.parseDouble(lsValue));
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getAddressYears()));
+                    break;
+                case 17:
+                    poJSON = poClient.ClientEmployment().setIncomeSource(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getIncomeSource()));
+                    break;
+                case 18:
+                    poJSON = poClient.ClientEmployment().setPosition(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getPosition()));
+                    break;
+                case 19:
+                    poJSON = poClient.ClientEmployment().setDependents(Integer.parseInt(lsValue));
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getDependents()));
+                    break;
+                case 20:
+                    poJSON = poClient.ClientEmployment().setEmployerName(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getEmployerName()));
+                    break;
+                case 21:
+                    poJSON = poClient.ClientEmployment().setBusinessAddress(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getBusinessAddress()));
+                    break;
+                case 22:
+                    poJSON = poClient.ClientEmployment().setOfficeEmail(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getOfficeEmail()));
                     break;
             }
         } else {//got focus
@@ -1131,9 +1029,33 @@ public class IndividualNewController implements Initializable {
         tblSocMed.autosize();
     }
 
+    public static void setCommaFormatter(TextField... textFields) {
+
+        for (TextField textField : textFields) {
+            // Allow only digits and at most one decimal point (no commas)
+            UnaryOperator<TextFormatter.Change> filter = change -> {
+                String newText = change.getControlNewText();
+
+                if (!newText.matches("[\\d.]*")) {
+                    return null;
+                }
+
+                long dotCount = newText.chars().filter(c -> c == '.').count();
+                if (dotCount > 1) {
+                    return null;
+                }
+
+                return change;
+            };
+            textField.setTextFormatter(new TextFormatter<>(filter));
+        }
+    }
+
     private void initFields() {
         applyMask("XXX-XXX-XXX-XXX", txtPersonal13); //Default mask
         applyMask("XXX-XX-XXXXXX", txtPersonal15);
+
+        setCommaFormatter(txtPersonal16, txtPersonal19);
 
         txtPersonal02.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal03.focusedProperty().addListener(txtPersonal_Focus);
@@ -1146,6 +1068,13 @@ public class IndividualNewController implements Initializable {
         txtPersonal13.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal14.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal15.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal16.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal17.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal18.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal19.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal20.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal21.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal22.focusedProperty().addListener(txtPersonal_Focus);
 
         txtPersonal02.setOnKeyPressed(this::txtPersonal_KeyPressed);
         txtPersonal03.setOnKeyPressed(this::txtPersonal_KeyPressed);
@@ -1315,6 +1244,13 @@ public class IndividualNewController implements Initializable {
         txtPersonal13.setText("");
         txtPersonal14.setText("");
         txtPersonal15.setText("");
+        txtPersonal16.setText("");
+        txtPersonal17.setText("");
+        txtPersonal18.setText("");
+        txtPersonal19.setText("");
+        txtPersonal20.setText("");
+        txtPersonal21.setText("");
+        txtPersonal22.setText("");
 
         txtAddress01.setText("");
         txtAddress02.setText("");
@@ -1732,6 +1668,13 @@ public class IndividualNewController implements Initializable {
             txtPersonal13.setText(poClient.getModel().getTaxIdNumber());
             txtPersonal14.setText(poClient.getModel().getLTOClientId());
             txtPersonal15.setText(poClient.getModel().getPhNationalId());
+            txtPersonal16.setText(String.valueOf(poClient.ClientEmployment().getAddressYears()));
+            txtPersonal17.setText(String.valueOf(poClient.ClientEmployment().getIncomeSource()));
+            txtPersonal18.setText(String.valueOf(poClient.ClientEmployment().getPosition()));
+            txtPersonal19.setText(String.valueOf(poClient.ClientEmployment().getDependents()));
+            txtPersonal20.setText(String.valueOf(poClient.ClientEmployment().getEmployerName()));
+            txtPersonal21.setText(String.valueOf(poClient.ClientEmployment().getBusinessAddress()));
+            txtPersonal22.setText(String.valueOf(poClient.ClientEmployment().getOfficeEmail()));
         } catch (SQLException | GuanzonException e) {
             e.printStackTrace();
         }

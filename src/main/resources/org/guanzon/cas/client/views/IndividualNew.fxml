@@ -338,12 +338,12 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <TextField fx:id="tfYrsAddress" alignment="CENTER_RIGHT" layoutX="97.0" layoutY="114.0" prefWidth="167.0" promptText="0" styleClass="text-field" GridPane.columnIndex="6" GridPane.rowIndex="3">
+                                                                        <TextField fx:id="txtPersonal16" alignment="CENTER_RIGHT" layoutX="97.0" layoutY="114.0" prefWidth="167.0" promptText="0" styleClass="text-field" GridPane.columnIndex="6" GridPane.rowIndex="3">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin>
                                                                         </TextField>
-                                                                        <TextField fx:id="tfOfficeAddress" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="11">
+                                                                        <TextField fx:id="txtPersonal21" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="11">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
@@ -352,7 +352,7 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <TextField fx:id="tfNoDependent" layoutX="457.0" layoutY="114.0" prefWidth="167.0" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="12">
+                                                                        <TextField fx:id="txtPersonal19" layoutX="457.0" layoutY="114.0" prefWidth="167.0" styleClass="text-field" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="12">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
@@ -361,7 +361,7 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <TextField fx:id="tfSourceOfIncome" layoutX="452.0" layoutY="281.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="10">
+                                                                        <TextField fx:id="txtPersonal17" layoutX="452.0" layoutY="281.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="10">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
@@ -370,7 +370,7 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <TextField fx:id="tfEmpBusName" layoutX="112.0" layoutY="281.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="10">
+                                                                        <TextField fx:id="txtPersonal20" layoutX="112.0" layoutY="281.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="10">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
@@ -379,7 +379,7 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <TextField fx:id="tfPosition" layoutX="112.0" layoutY="311.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="11">
+                                                                        <TextField fx:id="txtPersonal18" layoutX="112.0" layoutY="311.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="11">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
@@ -388,7 +388,7 @@
                                                                               <Font size="14.0" />
                                                                            </font>
                                                                         </Text>
-                                                                        <TextField fx:id="tfOfficeEmail" layoutX="452.0" layoutY="311.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="12">
+                                                                        <TextField fx:id="txtPersonal22" layoutX="452.0" layoutY="311.0" GridPane.columnIndex="6" GridPane.columnSpan="2" GridPane.rowIndex="12">
                                                                            <GridPane.margin>
                                                                               <Insets left="5.0" />
                                                                            </GridPane.margin></TextField>
