@@ -16,6 +16,7 @@ import org.guanzon.appdriver.constant.ClientType;
 import org.guanzon.appdriver.constant.EditMode;
 import org.guanzon.appdriver.constant.Logical;
 import org.guanzon.cas.client.model.Model_Client_Address;
+import org.guanzon.cas.client.model.Model_Client_Employment;
 import org.guanzon.cas.client.model.Model_Client_Institution_Contact;
 import org.guanzon.cas.client.model.Model_Client_Mail;
 import org.guanzon.cas.client.model.Model_Client_Master;
@@ -37,6 +38,7 @@ public class ClientInfo extends Parameter{
     Model_Client_Mail poMail;
     Model_Client_Social_Media poSocMed;
     Model_Client_Institution_Contact poContact;
+    Model_Client_Employment poClientEmployment;
     
     Client_Role poRole;
     Client_Master poContactPerson;
@@ -67,6 +69,7 @@ public class ClientInfo extends Parameter{
         poAddress = model.ClientAddress();
         poSocMed = model.ClientSocMed();
         poContact = model.ClientInstitutionContact();
+        poClientEmployment = model.ClientEmployment();
         
         if (psClientTp == null || psClientTp.isEmpty()) psClientTp = ClientType.INDIVIDUAL;
     }
@@ -86,6 +89,10 @@ public class ClientInfo extends Parameter{
     
     public Client_Master ContactPerson(){
         return poContactPerson;
+    }
+    
+    public Model_Client_Employment ClientEmployment(){
+        return poClientEmployment;
     }
 
     public Model_Client_Mobile Mobile(int row){
@@ -301,6 +308,18 @@ public class ClientInfo extends Parameter{
                 object.newRecord();
                 paContact.add(object);
             }
+            
+            //Open Client Employment
+            if(poClientEmployment == null){
+                poClientEmployment = new ClientModels(poGRider).ClientEmployment();
+            }
+            JSONObject loJSON = poClientEmployment.openRecord(poClient.getClientId());
+            if (!"success".equals((String) loJSON.get("result"))) {
+                loJSON = poClientEmployment.newRecord();
+                if (!"success".equals((String) loJSON.get("result"))) {
+                    return loJSON;
+                }
+            } 
         }
 
         return poJSON;
@@ -1392,6 +1411,9 @@ public class ClientInfo extends Parameter{
         poContact.initialize();
         poContact.newRecord();
         
+        poClientEmployment.initialize();
+        poClientEmployment.newRecord();
+        
         paMobile = new ArrayList<>();
         paMobile.add(poMobile);
         
@@ -1680,6 +1702,16 @@ public class ClientInfo extends Parameter{
                         loSocMed.updateRecord();
                         loSocMed.setModifiedDate(poGRider.getServerDate());
                         loSocMed.saveRecord();
+                    }
+                }
+            }
+            
+            if(poClientEmployment != null){
+                if(poClientEmployment.getEditMode() == EditMode.ADDNEW || poClientEmployment.getEditMode() == EditMode.UPDATE){
+                    poClientEmployment.setClientId(poClient.getClientId());//save
+                    poJSON = poClientEmployment.saveRecord();
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        return poJSON;
                     }
                 }
             }
