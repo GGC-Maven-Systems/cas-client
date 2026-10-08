@@ -1592,6 +1592,42 @@ public class ClientInfo extends Parameter{
                 }
                 
             }
+            
+            //Validate Client Employment
+            boolean lbHasClientEmp = poClientEmployment.getEmployerName() != null && !"".equals(poClientEmployment.getEmployerName());
+            if(lbHasClientEmp){
+                if(poClientEmployment.getBusinessAddress() == null || "".equals(poClientEmployment.getBusinessAddress())){
+                    poJSON = new JSONObject();
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Employer / Business address cannot be empty.");
+                    return poJSON;
+                }
+            } else {
+                lbHasClientEmp =  poClientEmployment.getBusinessAddress() != null && !"".equals(poClientEmployment.getBusinessAddress());
+                if(lbHasClientEmp){
+                    if(poClientEmployment.getEmployerName() == null || "".equals(poClientEmployment.getEmployerName())){
+                        poJSON = new JSONObject();
+                        poJSON.put("result", "error");
+                        poJSON.put("message", "Employer / Business name cannot be empty.");
+                        return poJSON;
+                    }
+                }
+            }
+            
+            if(lbHasClientEmp){
+                if(poClientEmployment.getPosition() == null || "".equals(poClientEmployment.getPosition())){
+                    poJSON = new JSONObject();
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Position cannot be empty.");
+                    return poJSON;
+                }
+                if(poClientEmployment.getWorkYears() <= 0){
+                    poJSON = new JSONObject();
+                    poJSON.put("result", "error");
+                    poJSON.put("message", "Work years cannot be empty.");
+                    return poJSON;
+                }
+            }
         }
         
         poJSON = new JSONObject();
@@ -1707,11 +1743,39 @@ public class ClientInfo extends Parameter{
             }
             
             if(poClientEmployment != null){
-                if(poClientEmployment.getEditMode() == EditMode.ADDNEW || poClientEmployment.getEditMode() == EditMode.UPDATE){
-                    poClientEmployment.setClientId(poClient.getClientId());//save
-                    poJSON = poClientEmployment.saveRecord();
-                    if (!"success".equals((String) poJSON.get("result"))) {
-                        return poJSON;
+                boolean lbHasClientEmp = true;
+                if(poClientEmployment.getEditMode() == EditMode.ADDNEW){
+                    lbHasClientEmp = poClientEmployment.getEmployerName() != null && !"".equals(poClientEmployment.getEmployerName());
+                    if(!lbHasClientEmp){
+                        lbHasClientEmp = poClientEmployment.getBusinessAddress() != null && !"".equals(poClientEmployment.getBusinessAddress());
+                    }
+                    if(!lbHasClientEmp){
+                        lbHasClientEmp = poClientEmployment.getIncomeSource() != null && !"".equals(poClientEmployment.getIncomeSource());
+                    }
+                    if(!lbHasClientEmp){
+                        lbHasClientEmp = poClientEmployment.getOfficeEmail() != null && !"".equals(poClientEmployment.getOfficeEmail());
+                    }
+                    if(!lbHasClientEmp){
+                        lbHasClientEmp = poClientEmployment.getPosition() != null && !"".equals(poClientEmployment.getPosition());
+                    }
+                    if(!lbHasClientEmp){
+                        lbHasClientEmp = poClientEmployment.getDependents() > 0;
+                    }
+                    if(!lbHasClientEmp){
+                        lbHasClientEmp = poClientEmployment.getAddressYears() > 0;
+                    }
+                    if(!lbHasClientEmp){
+                        lbHasClientEmp = poClientEmployment.getWorkYears() > 0;
+                    }
+                }
+                
+                if(lbHasClientEmp){
+                    if(poClientEmployment.getEditMode() == EditMode.ADDNEW || poClientEmployment.getEditMode() == EditMode.UPDATE){
+                        poClientEmployment.setClientId(poClient.getClientId());//save
+                        poJSON = poClientEmployment.saveRecord();
+                        if (!"success".equals((String) poJSON.get("result"))) {
+                            return poJSON;
+                        }
                     }
                 }
             }
