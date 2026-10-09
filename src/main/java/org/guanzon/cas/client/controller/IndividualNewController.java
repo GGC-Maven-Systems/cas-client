@@ -8,12 +8,16 @@ import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -1076,14 +1080,29 @@ public class IndividualNewController implements Initializable {
         tblSocMed.autosize();
     }
 
+    private static class CommaFormater {
+
+        boolean isUpdating;
+        AtomicBoolean isAdjusting;
+        int newCaretPos;
+    }
+
     public static void setCommaFormatter(TextField... textFields) {
 
+        DecimalFormat finalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+        finalFormat.setGroupingUsed(true);
+        finalFormat.setMinimumFractionDigits(2);
+        finalFormat.setMaximumFractionDigits(2);
+
         for (TextField textField : textFields) {
-            // Allow only digits and at most one decimal point (no commas)
+            final CommaFormater data = new CommaFormater();
+            data.isUpdating = false;
+            data.isAdjusting = new AtomicBoolean(false);
+            data.newCaretPos = 0;
+            // Disables other character
             UnaryOperator<TextFormatter.Change> filter = change -> {
                 String newText = change.getControlNewText();
-
-                if (!newText.matches("[\\d.]*")) {
+                if (!newText.matches("[\\d,\\.]*")) {
                     return null;
                 }
 
@@ -1095,6 +1114,52 @@ public class IndividualNewController implements Initializable {
                 return change;
             };
             textField.setTextFormatter(new TextFormatter<>(filter));
+            // Real-time formatting
+            textField.textProperty().addListener((obs, oldValue, newValue) -> {
+                if (data.isAdjusting.get() == true) {
+                    return;
+                }
+                try {
+                    if (data.isUpdating) {
+                        return;
+                    }
+                    data.isUpdating = true;
+                    String clean = newValue.replaceAll(",", "");
+                    if (clean.isEmpty() || clean.equals(".") || clean.matches("0*\\.0*")) {
+                        data.isUpdating = false;
+                        return;
+                    }
+                    try {
+                        String integerPart = clean;
+                        String decimalPart = "";
+                        int dotIndex = clean.indexOf(".");
+                        if (dotIndex >= 0) {
+                            integerPart = clean.substring(0, dotIndex);
+                            decimalPart = clean.substring(dotIndex);
+                        }
+                        long integerVal = integerPart.isEmpty() ? 0 : Long.parseLong(integerPart);
+                        String formattedInteger = NumberFormat.getIntegerInstance(Locale.US).format(integerVal);
+                        String formatted = formattedInteger + decimalPart;
+                        Platform.runLater(() -> {
+                            data.isAdjusting.set(true);
+                            int originalCaretPos = textField.getCaretPosition();
+                            textField.setText(formatted);
+                            int offset = formatted.length() - newValue.length();
+                            data.newCaretPos = originalCaretPos + offset;
+                            data.newCaretPos = Math.max(0, Math.min(formatted.length(), data.newCaretPos));
+                            data.isAdjusting.set(false);
+                        });
+                        Platform.runLater(() -> {
+                            textField.positionCaret(data.newCaretPos);
+                        });
+                    } catch (Exception e) {
+                    }
+                    data.isUpdating = false;
+                } catch (Exception e) {
+                    data.isUpdating = false;
+                }
+
+            });
         }
     }
 
