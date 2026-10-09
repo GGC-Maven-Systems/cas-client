@@ -7,13 +7,13 @@ import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -67,14 +67,13 @@ import org.json.simple.JSONObject;
 import javafx.util.StringConverter;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
-import ph.com.guanzongroup.cas.cashflow.utility.TextFormaterUtil;
 
 public class IndividualNewController implements Initializable {
 
     @FXML
     private AnchorPane AnchorMain, anchorPersonal, anchorAddress, anchorMobile, anchorEmail, anchorSocMed, draggablePane;
     @FXML
-    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtPersonal23, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
+    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtPersonal23, txtPersonal24, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
     @FXML
     private TextArea txtField03, txtSocial02;
     @FXML
@@ -649,11 +648,34 @@ public class IndividualNewController implements Initializable {
                     }
                     txtField.setText(String.valueOf(poClient.ClientEmployment().getWorkYears()));
                     break;
+                case 24:
+                    lsValue = removeComma(lsValue);
+                    poJSON = poClient.ClientEmployment().setGrossIncome(Double.parseDouble(lsValue));
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
+                    break;
             }
         } else {//got focus
             txtField.selectAll();
         }
     };
+
+    public static String setIntegerValueToDecimalFormat(Object foObject, boolean fbIs4Decimal) {
+        String lsDecimalFormat = fbIs4Decimal ? "#,##0.0000" : "#,##0.00";
+        DecimalFormat format = new DecimalFormat(lsDecimalFormat);
+        try {
+            if (foObject != null) {
+                return format.format(Double.parseDouble(String.valueOf(foObject)));
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("Error: Invalid number format for input - " + foObject);
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred: " + e.getMessage());
+        }
+        return fbIs4Decimal ? "0.0000" : "0.00";
+    }
 
     public static String removeComma(String numberStr) {
         if (numberStr == null || numberStr.isEmpty()) {
@@ -1080,7 +1102,7 @@ public class IndividualNewController implements Initializable {
         applyMask("XXX-XXX-XXX-XXX", txtPersonal13); //Default mask
         applyMask("XXX-XX-XXXXXX", txtPersonal15);
 
-        setCommaFormatter(txtPersonal16, txtPersonal19, txtPersonal23);
+        setCommaFormatter(txtPersonal16, txtPersonal19, txtPersonal23, txtPersonal24);
 
         txtPersonal02.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal03.focusedProperty().addListener(txtPersonal_Focus);
@@ -1101,6 +1123,7 @@ public class IndividualNewController implements Initializable {
         txtPersonal21.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal22.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal23.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal24.focusedProperty().addListener(txtPersonal_Focus);
 
         txtPersonal02.setOnKeyPressed(this::txtPersonal_KeyPressed);
         txtPersonal03.setOnKeyPressed(this::txtPersonal_KeyPressed);
@@ -1278,6 +1301,7 @@ public class IndividualNewController implements Initializable {
         txtPersonal21.setText("");
         txtPersonal22.setText("");
         txtPersonal23.setText("");
+        txtPersonal24.setText("");
 
         txtAddress01.setText("");
         txtAddress02.setText("");
@@ -1703,6 +1727,7 @@ public class IndividualNewController implements Initializable {
             txtPersonal21.setText(String.valueOf(poClient.ClientEmployment().getBusinessAddress()));
             txtPersonal22.setText(String.valueOf(poClient.ClientEmployment().getOfficeEmail()));
             txtPersonal23.setText(String.valueOf(poClient.ClientEmployment().getWorkYears()));
+            txtPersonal24.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
         } catch (SQLException | GuanzonException e) {
             e.printStackTrace();
         }
