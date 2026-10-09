@@ -1411,6 +1411,7 @@ public class ClientInfo extends Parameter{
         poContact.initialize();
         poContact.newRecord();
         
+        poClientEmployment = new ClientModels(poGRider).ClientEmployment();
         poClientEmployment.initialize();
         poClientEmployment.newRecord();
         
@@ -1770,8 +1771,14 @@ public class ClientInfo extends Parameter{
                 }
                 
                 if(lbHasClientEmp){
-                    if(poClientEmployment.getEditMode() == EditMode.ADDNEW || poClientEmployment.getEditMode() == EditMode.UPDATE){
+                    if(poClientEmployment.getEditMode() == EditMode.ADDNEW){
                         poClientEmployment.setClientId(poClient.getClientId());//save
+                        poJSON = poClientEmployment.saveRecord();
+                        if (!"success".equals((String) poJSON.get("result"))) {
+                            return poJSON;
+                        }
+                    } else {
+                        poClientEmployment.updateRecord();
                         poJSON = poClientEmployment.saveRecord();
                         if (!"success".equals((String) poJSON.get("result"))) {
                             return poJSON;
