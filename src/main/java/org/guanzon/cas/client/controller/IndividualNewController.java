@@ -7,6 +7,7 @@ import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.ResourceBundle;
@@ -655,13 +656,28 @@ public class IndividualNewController implements Initializable {
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
                     }
-                    txtField.setText(String.valueOf(poClient.ClientEmployment().getGrossIncome()));
+                    txtField.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
                     break;
             }
         } else {//got focus
             txtField.selectAll();
         }
     };
+
+    public static String setIntegerValueToDecimalFormat(Object foObject, boolean fbIs4Decimal) {
+        String lsDecimalFormat = fbIs4Decimal ? "#,##0.0000" : "#,##0.00";
+        DecimalFormat format = new DecimalFormat(lsDecimalFormat);
+        try {
+            if (foObject != null) {
+                return format.format(Double.parseDouble(String.valueOf(foObject)));
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("Error: Invalid number format for input - " + foObject);
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred: " + e.getMessage());
+        }
+        return fbIs4Decimal ? "0.0000" : "0.00";
+    }
 
     public static String removeComma(String numberStr) {
         if (numberStr == null || numberStr.isEmpty()) {
@@ -1713,7 +1729,7 @@ public class IndividualNewController implements Initializable {
             txtPersonal21.setText(String.valueOf(poClient.ClientEmployment().getBusinessAddress()));
             txtPersonal22.setText(String.valueOf(poClient.ClientEmployment().getOfficeEmail()));
             txtPersonal23.setText(String.valueOf(poClient.ClientEmployment().getWorkYears()));
-            txtPersonal24.setText(String.valueOf(poClient.ClientEmployment().getGrossIncome()));
+            txtPersonal24.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
         } catch (SQLException | GuanzonException e) {
             e.printStackTrace();
         }
