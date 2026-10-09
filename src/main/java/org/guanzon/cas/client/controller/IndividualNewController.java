@@ -638,6 +638,10 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(String.valueOf(poClient.ClientEmployment().getBusinessAddress()));
                     break;
                 case 22:
+                    if (!CommonUtils.isValidEmail(lsValue)) {
+                        ShowMessageFX.Warning(getStage(), "Invalid E-mail", "Computerized Acounting System", MODULE);
+                        break;
+                    }
                     poJSON = poClient.ClientEmployment().setOfficeEmail(lsValue);
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
