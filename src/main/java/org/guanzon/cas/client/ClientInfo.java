@@ -1130,7 +1130,16 @@ public class ClientInfo extends Parameter{
                         ", a.cCvilStat " +
                         ", a.sCitizenx " +
                         ", a.dBirthDte " +
-                        ", TRIM(CONCAT(a.sLastName, ', ', a.sFrstName, IF(a.sSuffixNm <> '', CONCAT(' ', a.sSuffixNm, ''), ''), ' ', a.sMiddName)) xFullName  " +
+//                        ", TRIM(CONCAT(a.sLastName, ', ', a.sFrstName, IF(a.sSuffixNm <> '', CONCAT(' ', a.sSuffixNm, ''), ''), ' ', a.sMiddName)) xFullName  " +
+                        ", TRIM(CONCAT(a.sLastName, ', ',a.sFrstName, " +
+                        "     CASE  " +
+                        "         WHEN a.sSuffixNm IS NOT NULL AND TRIM(a.sSuffixNm) <> ''  " +
+                        "         THEN CONCAT(' ', TRIM(a.sSuffixNm))  " +
+                        "         ELSE '' " +
+                        "     END, " +
+                        "     ' ', " +
+                        "     a.sMiddName " +
+                        "  )) AS xFullName " +
                         ", IFNULL(b.sTownIDxx, '') xTownIDxx " +
                         ", IFNULL(b.sBrgyIDxx, '') xBrgyIDxx " +
                         "FROM Client_Master a " +
@@ -1771,7 +1780,7 @@ public class ClientInfo extends Parameter{
                 }
                 
                 if(lbHasClientEmp){
-                    if(poClientEmployment.getEditMode() == EditMode.ADDNEW){
+                    if(poClientEmployment.getEditMode() == EditMode.ADDNEW) {
                         poClientEmployment.setClientId(poClient.getClientId());//save
                         poJSON = poClientEmployment.saveRecord();
                         if (!"success".equals((String) poJSON.get("result"))) {
