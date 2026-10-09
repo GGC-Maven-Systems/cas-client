@@ -14,7 +14,6 @@ import java.util.ResourceBundle;
 import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.regex.Pattern;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -68,7 +67,6 @@ import org.json.simple.JSONObject;
 import javafx.util.StringConverter;
 import org.guanzon.appdriver.base.MiscUtil;
 import org.guanzon.appdriver.base.SQLUtil;
-import ph.com.guanzongroup.cas.cashflow.utility.TextFormaterUtil;
 
 public class IndividualNewController implements Initializable {
 
