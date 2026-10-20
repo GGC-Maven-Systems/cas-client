@@ -9,6 +9,7 @@ import java.sql.SQLException;
 import java.sql.Timestamp;
 import java.text.DecimalFormat;
 import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.util.Locale;
@@ -1327,13 +1328,28 @@ public class IndividualNewController implements Initializable {
         });
 
         txtPersonal07.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue) { // Lost focus
-                LocalDate selectedDate = txtPersonal07.getValue();
-                System.out.println("this is date " + selectedDate);
-                LocalDate localbdate = LocalDate.parse(selectedDate.toString(), formatter);
-                String formattedDate = formatter.format(selectedDate);
-                poClient.getModel().setBirthDate((SQLUtil.toDate(formattedDate, "yyyy-MM-dd")));
-                txtPersonal07.setValue(localbdate);
+            if (!newValue) {
+                try {
+                    // Lost focus
+                    LocalDate selectedDate = txtPersonal07.getValue();
+                    SimpleDateFormat sdfFormat = new SimpleDateFormat(SQLUtil.FORMAT_SHORT_DATE);
+                    String lsServerDate = sdfFormat.format(poGRider.getServerDate());
+                    LocalDate currentDate = LocalDate.parse(lsServerDate, DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
+
+                    String formattedDate = formatter.format(currentDate);
+                    if (selectedDate.isAfter(currentDate)) { //if validated set to current
+                        ShowMessageFX.Warning(getStage(), "Unable to input future date", "Warning", MODULE);
+                        poClient.getModel().setBirthDate((SQLUtil.toDate(formattedDate, "yyyy-MM-dd")));
+                        txtPersonal07.setValue(currentDate);
+                        return;
+                    }
+                    LocalDate localbdate = LocalDate.parse(selectedDate.toString(), formatter);
+                    formattedDate = formatter.format(selectedDate);
+                    poClient.getModel().setBirthDate((SQLUtil.toDate(formattedDate, "yyyy-MM-dd")));
+                    txtPersonal07.setValue(localbdate);
+                } catch (SQLException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
