@@ -1331,7 +1331,7 @@ public class IndividualNewController implements Initializable {
             if (!newValue) {
                 try {
                     // Lost focus
-                    LocalDate selectedDate = txtPersonal07.getValue();
+                    LocalDate selectedDate = LocalDate.parse(txtPersonal07.getEditor().getText(), DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
                     SimpleDateFormat sdfFormat = new SimpleDateFormat(SQLUtil.FORMAT_SHORT_DATE);
                     String lsServerDate = sdfFormat.format(poGRider.getServerDate());
                     LocalDate currentDate = LocalDate.parse(lsServerDate, DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
@@ -1341,6 +1341,9 @@ public class IndividualNewController implements Initializable {
                         ShowMessageFX.Warning(getStage(), "Unable to input future date", "Warning", MODULE);
                         poClient.getModel().setBirthDate((SQLUtil.toDate(formattedDate, "yyyy-MM-dd")));
                         txtPersonal07.setValue(currentDate);
+                        txtPersonal07.getEditor().setText(
+                                txtPersonal07.getConverter().toString(currentDate)
+                        );
                         return;
                     }
                     LocalDate localbdate = LocalDate.parse(selectedDate.toString(), formatter);
