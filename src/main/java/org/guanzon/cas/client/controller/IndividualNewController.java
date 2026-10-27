@@ -641,6 +641,7 @@ public class IndividualNewController implements Initializable {
                 case 22:
                     if (!CommonUtils.isValidEmail(lsValue)) {
                         ShowMessageFX.Warning(getStage(), "Invalid E-mail", "Computerized Acounting System", MODULE);
+                        poJSON = poClient.ClientEmployment().setOfficeEmail("");
                         break;
                     }
                     poJSON = poClient.ClientEmployment().setOfficeEmail(lsValue);
