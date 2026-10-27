@@ -6,6 +6,7 @@ import org.guanzon.cas.client.model.Model_AP_Client_Ledger;
 import org.guanzon.cas.client.model.Model_AP_Client_Master;
 import org.guanzon.cas.client.model.Model_Account_Client_Accreditation;
 import org.guanzon.cas.client.model.Model_Client_Address;
+import org.guanzon.cas.client.model.Model_Client_Employment;
 import org.guanzon.cas.client.model.Model_Client_Institution_Contact;
 import org.guanzon.cas.client.model.Model_Client_Mail;
 import org.guanzon.cas.client.model.Model_Client_Master;
@@ -20,6 +21,7 @@ public class ClientModels {
 
     private Model_Client_Master poClientMaster;
     private Model_Client_Address poClientAddress;
+    private Model_Client_Employment poClientEmployment;
     private Model_Client_Mobile poClientMobile;
     private Model_Client_Mail poClientMail;
     private Model_Client_Social_Media poClientSocmed;
@@ -67,6 +69,23 @@ public class ClientModels {
         }
 
         return poClientAddress;
+    }
+
+    public Model_Client_Employment ClientEmployment() {
+        if (poGRider == null) {
+            System.err.println("ClientModel.ClientEmployment: Application driver is not set.");
+            return null;
+        }
+
+        if (poClientEmployment == null) {
+            poClientEmployment = new Model_Client_Employment();
+            poClientEmployment.setApplicationDriver(poGRider);
+            poClientEmployment.setXML("Model_Client_Employment");
+            poClientEmployment.setTableName("Client_Employment");
+            poClientEmployment.initialize();
+        }
+
+        return poClientEmployment;
     }
 
     public Model_Client_Institution_Contact ClientInstitutionContact() {
