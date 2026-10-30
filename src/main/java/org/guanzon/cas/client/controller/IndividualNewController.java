@@ -7,11 +7,18 @@ import java.net.URL;
 import java.sql.Date;
 import java.sql.SQLException;
 import java.sql.Timestamp;
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.Locale;
 import java.util.ResourceBundle;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.UnaryOperator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javafx.application.Platform;
 import javafx.beans.property.ReadOnlyBooleanPropertyBase;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
@@ -31,6 +38,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
 import static javafx.scene.input.KeyCode.DOWN;
@@ -68,189 +76,35 @@ import org.guanzon.appdriver.base.SQLUtil;
 public class IndividualNewController implements Initializable {
 
     @FXML
-    private AnchorPane AnchorMain;
+    private AnchorPane AnchorMain, anchorPersonal, anchorAddress, anchorMobile, anchorEmail, anchorSocMed, draggablePane;
     @FXML
-    private AnchorPane draggablePane;
+    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtPersonal23, txtPersonal24, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
     @FXML
-    private Button btnExit;
-    @FXML
-    private FontAwesomeIconView glyphExit;
-    @FXML
-    private HBox hbButtons;
-    @FXML
-    private Button btnSave;
-    @FXML
-    private Button btnCancel;
-    @FXML
-    private TextField txtField01;
-    @FXML
-    private TextField txtField02;
-    @FXML
-    private TextArea txtField03;
-    @FXML
-    private TabPane TabPane;
-    @FXML
-    private Tab PersonalInfo;
-    @FXML
-    private TextField txtPersonal02;
-    @FXML
-    private TextField txtPersonal03;
-    @FXML
-    private TextField txtPersonal04;
-    @FXML
-    private TextField txtPersonal05;
-    @FXML
-    private TextField txtPersonal06;
-    @FXML
-    private DatePicker txtPersonal07;
-    @FXML
-    private TextField txtPersonal08;
-    @FXML
-    private ComboBox cmbPersonal09;
-    @FXML
-    private ComboBox cmbPersonal10;
-    @FXML
-    private TextField txtPersonal11;
-    @FXML
-    private TextField txtPersonal12;
-    @FXML
-    private TextField txtPersonal13;
-    @FXML
-    private TextField txtPersonal15;
-    @FXML
-    private TextField txtPersonal14;
+    private TextArea txtField03, txtSocial02;
     @FXML
     private Label lblClientStatus;
     @FXML
-    private Tab Address;
+    private TabPane TabPane;
     @FXML
-    private AnchorPane anchorPersonal;
+    private Tab PersonalInfo, Address, Mobile, Email, SocialMedia;
     @FXML
-    private AnchorPane anchorAddress;
+    private DatePicker txtPersonal07;
     @FXML
-    private AnchorPane anchorMobile;
+    private ComboBox cmbPersonal09, cmbPersonal10, cmbMobile01, cmbMobile02, cmbEmail01, cmbSocMed01;
     @FXML
-    private AnchorPane anchorEmail;
+    private TableView tblAddress, tblMobile, tblEmail, tblSocMed;
     @FXML
-    private AnchorPane anchorSocMed;
+    private TableColumn indexAddress01, indexAddress02, indexAddress03, indexAddress04, indexAddress05, indexMobileNo01, indexMobileNo02, indexMobileNo03, indexMobileNo04, indexEmail01, indexEmail02, indexEmail03, indexSocMed01, indexSocMed02, indexSocMed03, indexSocMed04;
     @FXML
-    private GridPane gridAddress;
+    private GridPane gridAddress, gridMobile, gridEmail, gridSocMed;
     @FXML
-    private GridPane gridMobile;
+    private CheckBox cbAddress01, cbAddress02, cbAddress07, cbAddress03, cbAddress04, cbAddress06, cbAddress05, cbAddress08, cbMobileNo01, cbMobileNo02, cbEmail01, cbEmail02, cbSocMed01;
     @FXML
-    private GridPane gridEmail;
+    private Button btnAddAddress, btnAddMobile, btnAddEmail, btnAddSocMed, btnSave, btnCancel, btnExit;
     @FXML
-    private GridPane gridSocMed;
+    private HBox hbButtons;
     @FXML
-    private TableView tblAddress;
-    @FXML
-    private TableColumn indexAddress01;
-    @FXML
-    private TableColumn indexAddress02;
-    @FXML
-    private TableColumn indexAddress03;
-    @FXML
-    private TableColumn indexAddress04;
-    @FXML
-    private TableColumn indexAddress05;
-    @FXML
-    private TextField txtAddress03;
-    @FXML
-    private TextField txtAddress04;
-    @FXML
-    private TextField txtAddress05;
-    @FXML
-    private TextField txtAddress01;
-    @FXML
-    private TextField txtAddress02;
-    @FXML
-    private TextField txtAddress06;
-    @FXML
-    private TextField txtAddress07;
-    @FXML
-    private CheckBox cbAddress01;
-    @FXML
-    private CheckBox cbAddress02;
-    @FXML
-    private CheckBox cbAddress03;
-    @FXML
-    private CheckBox cbAddress04;
-    @FXML
-    private CheckBox cbAddress05;
-    @FXML
-    private CheckBox cbAddress06;
-    @FXML
-    private CheckBox cbAddress07;
-    @FXML
-    private CheckBox cbAddress08;
-    @FXML
-    private Button btnAddAddress;
-    @FXML
-    private Tab Mobile;
-    @FXML
-    private ComboBox cmbMobile01;
-    @FXML
-    private ComboBox cmbMobile02;
-    @FXML
-    private TextField txtMobile01;
-    @FXML
-    private CheckBox cbMobileNo01;
-    @FXML
-    private CheckBox cbMobileNo02;
-    @FXML
-    private Button btnAddMobile;
-    @FXML
-    private TableView tblMobile;
-    @FXML
-    private TableColumn indexMobileNo01;
-    @FXML
-    private TableColumn indexMobileNo02;
-    @FXML
-    private TableColumn indexMobileNo03;
-    @FXML
-    private TableColumn indexMobileNo04;
-    @FXML
-    private Tab Email;
-    @FXML
-    private ComboBox cmbEmail01;
-    @FXML
-    private TextField txtEmail01;
-    @FXML
-    private CheckBox cbEmail01;
-    @FXML
-    private CheckBox cbEmail02;
-    @FXML
-    private Button btnAddEmail;
-    @FXML
-    private TableView tblEmail;
-    @FXML
-    private TableColumn indexEmail01;
-    @FXML
-    private TableColumn indexEmail02;
-    @FXML
-    private TableColumn indexEmail03;
-    @FXML
-    private Tab SocialMedia;
-    @FXML
-    private ComboBox cmbSocMed01;
-    @FXML
-    private TextField txtSocial01;
-    @FXML
-    private TextArea txtSocial02;
-    @FXML
-    private CheckBox cbSocMed01;
-    @FXML
-    private Button btnAddSocMed;
-    @FXML
-    private TableView tblSocMed;
-    @FXML
-    private TableColumn indexSocMed01;
-    @FXML
-    private TableColumn indexSocMed02;
-    @FXML
-    private TableColumn indexSocMed03;
-    @FXML
-    private TableColumn indexSocMed04;
+    private FontAwesomeIconView glyphExit;
 
     private final String MODULE = "Client Controller";
     private GRiderCAS poGRider;
@@ -727,7 +581,6 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(poClient.getModel().getLTOClientId());
                     break;
                 case 15:
-
                     String lsNatlIDPattern = "^\\d{3}-\\d{2}-\\d{6}$";
                     if (!lsValue.matches(lsNatlIDPattern)) {
                         ShowMessageFX.Warning(getStage(), "National ID is invalid", "Warning", MODULE);
@@ -741,12 +594,114 @@ public class IndividualNewController implements Initializable {
 
                     txtField.setText(poClient.getModel().getPhNationalId());
                     break;
+                case 16:
+                    lsValue = removeComma(lsValue);
+                    poJSON = poClient.ClientEmployment().setAddressYears(Double.parseDouble(lsValue));
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getAddressYears()));
+                    break;
+                case 17:
+                    poJSON = poClient.ClientEmployment().setIncomeSource(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getIncomeSource()));
+                    break;
+                case 18:
+                    poJSON = poClient.ClientEmployment().setPosition(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getPosition()));
+                    break;
+                case 19:
+                    lsValue = removeComma(lsValue);
+                    poJSON = poClient.ClientEmployment().setDependents(Integer.parseInt(lsValue));
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getDependents()));
+                    break;
+                case 20:
+                    poJSON = poClient.ClientEmployment().setEmployerName(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getEmployerName()));
+                    break;
+                case 21:
+                    poJSON = poClient.ClientEmployment().setBusinessAddress(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getBusinessAddress()));
+                    break;
+                case 22:
+                    if (!CommonUtils.isValidEmail(lsValue)) {
+                        ShowMessageFX.Warning(getStage(), "Invalid E-mail", "Computerized Acounting System", MODULE);
+                        poJSON = poClient.ClientEmployment().setOfficeEmail("");
+                        break;
+                    }
+                    poJSON = poClient.ClientEmployment().setOfficeEmail(lsValue);
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getOfficeEmail()));
+                    break;
+                case 23:
+                    lsValue = removeComma(lsValue);
+                    poJSON = poClient.ClientEmployment().setWorkYears(Double.parseDouble(lsValue));
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(poClient.ClientEmployment().getWorkYears()));
+                    break;
+                case 24:
+                    lsValue = removeComma(lsValue);
+                    poJSON = poClient.ClientEmployment().setGrossIncome(Double.parseDouble(lsValue));
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+                    txtField.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
+                    break;
             }
         } else {//got focus
             txtField.selectAll();
         }
     };
 
+    public static String setIntegerValueToDecimalFormat(Object foObject, boolean fbIs4Decimal) {
+        String lsDecimalFormat = fbIs4Decimal ? "#,##0.0000" : "#,##0.00";
+        DecimalFormat format = new DecimalFormat(lsDecimalFormat);
+        try {
+            if (foObject != null) {
+                return format.format(Double.parseDouble(String.valueOf(foObject)));
+            }
+        } catch (NumberFormatException e) {
+            System.err.println("Error: Invalid number format for input - " + foObject);
+        } catch (Exception e) {
+            System.err.println("An unexpected error occurred: " + e.getMessage());
+        }
+        return fbIs4Decimal ? "0.0000" : "0.00";
+    }
+
+    public static String removeComma(String numberStr) {
+        if (numberStr == null || numberStr.isEmpty()) {
+            return "0";
+        }
+
+        // Remove commas
+        String clean = numberStr.replace(",", "");
+
+        // Check if it's exactly negative zero
+        if (clean.matches("-0+(\\.0+)?")) {
+            return "0";
+        }
+
+        return clean.isEmpty() ? "0" : clean;
+    }
     final ChangeListener<? super Boolean> txtAddress_Focus = (o, ov, nv) -> {
         if (!pbLoaded) {
             return;
@@ -1131,9 +1086,94 @@ public class IndividualNewController implements Initializable {
         tblSocMed.autosize();
     }
 
+    private static class CommaFormater {
+
+        boolean isUpdating;
+        AtomicBoolean isAdjusting;
+        int newCaretPos;
+    }
+
+    public static void setCommaFormatter(TextField... textFields) {
+
+        DecimalFormat finalFormat = (DecimalFormat) NumberFormat.getNumberInstance(Locale.US);
+        finalFormat.setGroupingUsed(true);
+        finalFormat.setMinimumFractionDigits(2);
+        finalFormat.setMaximumFractionDigits(2);
+
+        for (TextField textField : textFields) {
+            final CommaFormater data = new CommaFormater();
+            data.isUpdating = false;
+            data.isAdjusting = new AtomicBoolean(false);
+            data.newCaretPos = 0;
+            // Disables other character
+            UnaryOperator<TextFormatter.Change> filter = change -> {
+                String newText = change.getControlNewText();
+                if (!newText.matches("[\\d,\\.]*")) {
+                    return null;
+                }
+
+                long dotCount = newText.chars().filter(c -> c == '.').count();
+                if (dotCount > 1) {
+                    return null;
+                }
+
+                return change;
+            };
+            textField.setTextFormatter(new TextFormatter<>(filter));
+            // Real-time formatting
+            textField.textProperty().addListener((obs, oldValue, newValue) -> {
+                if (data.isAdjusting.get() == true) {
+                    return;
+                }
+                try {
+                    if (data.isUpdating) {
+                        return;
+                    }
+                    data.isUpdating = true;
+                    String clean = newValue.replaceAll(",", "");
+                    if (clean.isEmpty() || clean.equals(".") || clean.matches("0*\\.0*")) {
+                        data.isUpdating = false;
+                        return;
+                    }
+                    try {
+                        String integerPart = clean;
+                        String decimalPart = "";
+                        int dotIndex = clean.indexOf(".");
+                        if (dotIndex >= 0) {
+                            integerPart = clean.substring(0, dotIndex);
+                            decimalPart = clean.substring(dotIndex);
+                        }
+                        long integerVal = integerPart.isEmpty() ? 0 : Long.parseLong(integerPart);
+                        String formattedInteger = NumberFormat.getIntegerInstance(Locale.US).format(integerVal);
+                        String formatted = formattedInteger + decimalPart;
+                        Platform.runLater(() -> {
+                            data.isAdjusting.set(true);
+                            int originalCaretPos = textField.getCaretPosition();
+                            textField.setText(formatted);
+                            int offset = formatted.length() - newValue.length();
+                            data.newCaretPos = originalCaretPos + offset;
+                            data.newCaretPos = Math.max(0, Math.min(formatted.length(), data.newCaretPos));
+                            data.isAdjusting.set(false);
+                        });
+                        Platform.runLater(() -> {
+                            textField.positionCaret(data.newCaretPos);
+                        });
+                    } catch (Exception e) {
+                    }
+                    data.isUpdating = false;
+                } catch (Exception e) {
+                    data.isUpdating = false;
+                }
+
+            });
+        }
+    }
+
     private void initFields() {
         applyMask("XXX-XXX-XXX-XXX", txtPersonal13); //Default mask
         applyMask("XXX-XX-XXXXXX", txtPersonal15);
+
+        setCommaFormatter(txtPersonal16, txtPersonal19, txtPersonal23, txtPersonal24);
 
         txtPersonal02.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal03.focusedProperty().addListener(txtPersonal_Focus);
@@ -1146,6 +1186,15 @@ public class IndividualNewController implements Initializable {
         txtPersonal13.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal14.focusedProperty().addListener(txtPersonal_Focus);
         txtPersonal15.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal16.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal17.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal18.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal19.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal20.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal21.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal22.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal23.focusedProperty().addListener(txtPersonal_Focus);
+        txtPersonal24.focusedProperty().addListener(txtPersonal_Focus);
 
         txtPersonal02.setOnKeyPressed(this::txtPersonal_KeyPressed);
         txtPersonal03.setOnKeyPressed(this::txtPersonal_KeyPressed);
@@ -1280,13 +1329,31 @@ public class IndividualNewController implements Initializable {
         });
 
         txtPersonal07.focusedProperty().addListener((observable, oldValue, newValue) -> {
-            if (!newValue) { // Lost focus
-                LocalDate selectedDate = txtPersonal07.getValue();
-                System.out.println("this is date " + selectedDate);
-                LocalDate localbdate = LocalDate.parse(selectedDate.toString(), formatter);
-                String formattedDate = formatter.format(selectedDate);
-                poClient.getModel().setBirthDate((SQLUtil.toDate(formattedDate, "yyyy-MM-dd")));
-                txtPersonal07.setValue(localbdate);
+            if (!newValue) {
+                try {
+                    // Lost focus
+                    LocalDate selectedDate = LocalDate.parse(txtPersonal07.getEditor().getText(), DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
+                    SimpleDateFormat sdfFormat = new SimpleDateFormat(SQLUtil.FORMAT_SHORT_DATE);
+                    String lsServerDate = sdfFormat.format(poGRider.getServerDate());
+                    LocalDate currentDate = LocalDate.parse(lsServerDate, DateTimeFormatter.ofPattern(SQLUtil.FORMAT_SHORT_DATE));
+
+                    String formattedDate = formatter.format(currentDate);
+                    if (selectedDate.isAfter(currentDate)) { //if validated set to current
+                        ShowMessageFX.Warning(getStage(), "Unable to input future date", "Warning", MODULE);
+                        poClient.getModel().setBirthDate((SQLUtil.toDate(formattedDate, "yyyy-MM-dd")));
+                        txtPersonal07.setValue(currentDate);
+                        txtPersonal07.getEditor().setText(
+                                txtPersonal07.getConverter().toString(currentDate)
+                        );
+                        return;
+                    }
+                    LocalDate localbdate = LocalDate.parse(selectedDate.toString(), formatter);
+                    formattedDate = formatter.format(selectedDate);
+                    poClient.getModel().setBirthDate((SQLUtil.toDate(formattedDate, "yyyy-MM-dd")));
+                    txtPersonal07.setValue(localbdate);
+                } catch (SQLException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.SEVERE, null, ex);
+                }
             }
         });
 
@@ -1315,6 +1382,15 @@ public class IndividualNewController implements Initializable {
         txtPersonal13.setText("");
         txtPersonal14.setText("");
         txtPersonal15.setText("");
+        txtPersonal16.setText("");
+        txtPersonal17.setText("");
+        txtPersonal18.setText("");
+        txtPersonal19.setText("");
+        txtPersonal20.setText("");
+        txtPersonal21.setText("");
+        txtPersonal22.setText("");
+        txtPersonal23.setText("");
+        txtPersonal24.setText("");
 
         txtAddress01.setText("");
         txtAddress02.setText("");
@@ -1732,6 +1808,15 @@ public class IndividualNewController implements Initializable {
             txtPersonal13.setText(poClient.getModel().getTaxIdNumber());
             txtPersonal14.setText(poClient.getModel().getLTOClientId());
             txtPersonal15.setText(poClient.getModel().getPhNationalId());
+            txtPersonal16.setText(String.valueOf(poClient.ClientEmployment().getAddressYears()));
+            txtPersonal17.setText(String.valueOf(poClient.ClientEmployment().getIncomeSource()));
+            txtPersonal18.setText(String.valueOf(poClient.ClientEmployment().getPosition()));
+            txtPersonal19.setText(String.valueOf(poClient.ClientEmployment().getDependents()));
+            txtPersonal20.setText(String.valueOf(poClient.ClientEmployment().getEmployerName()));
+            txtPersonal21.setText(String.valueOf(poClient.ClientEmployment().getBusinessAddress()));
+            txtPersonal22.setText(String.valueOf(poClient.ClientEmployment().getOfficeEmail()));
+            txtPersonal23.setText(String.valueOf(poClient.ClientEmployment().getWorkYears()));
+            txtPersonal24.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
         } catch (SQLException | GuanzonException e) {
             e.printStackTrace();
         }
