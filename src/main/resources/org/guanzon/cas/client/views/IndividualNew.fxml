@@ -30,7 +30,7 @@
 
 <?import java.net.URL?>
 
-<AnchorPane fx:id="AnchorMain" maxWidth="2500.0" minWidth="688.0" prefHeight="624.0" prefWidth="688.0" stylesheets="@Client.css" xmlns="http://javafx.com/javafx/8.0.381" xmlns:fx="http://javafx.com/fxml/1">
+<AnchorPane fx:id="AnchorMain" maxWidth="2500.0" minWidth="688.0" prefWidth="688.0" stylesheets="@Client.css" xmlns="http://javafx.com/javafx/8.0.381" xmlns:fx="http://javafx.com/fxml/1">
 
     <children>
       <StackPane AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -114,7 +114,7 @@
                                  <center>
                                     <AnchorPane BorderPane.alignment="CENTER">
                                        <children>
-                                                      <AnchorPane layoutX="15.0" layoutY="15.0" prefHeight="460.0" prefWidth="688.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                      <AnchorPane layoutX="15.0" layoutY="15.0" prefWidth="688.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                           <children>
                                                               <TabPane fx:id="TabPane" prefWidth="200.0" tabClosingPolicy="UNAVAILABLE" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                   <tabs>
@@ -125,7 +125,7 @@
                                                                   <Insets bottom="10.0" left="10.0" right="10.0" top="5.0" />
                                                                </padding>
                                                                <children>
-                                                                  <GridPane hgap="2.0" layoutX="-37.0" layoutY="13.0" vgap="2.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
+                                                                  <GridPane hgap="2.0" layoutX="-37.0" layoutY="13.0" vgap="2.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0">
                                                                      <columnConstraints>
                                                                         <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" prefWidth="110.0" />
                                                                         <ColumnConstraints hgrow="SOMETIMES" prefWidth="80.0" />
