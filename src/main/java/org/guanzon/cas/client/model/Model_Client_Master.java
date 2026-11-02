@@ -172,6 +172,23 @@ public class Model_Client_Master extends Model{
     public String getSpouseId(){
         return (String) getValue("sSpouseID");
     }
+
+    public JSONObject setFatherName(String fatherName){
+        return setValue("sFatherID", fatherName);
+    }
+
+    public String getFatherName(){
+        return (String) getValue("sFatherID");
+    }
+
+    public JSONObject setMotherName(String motherName){
+        return setValue("sMotherID", motherName);
+    }
+
+    public String getMotherName(){
+        return (String) getValue("sMotherID");
+    }
+
     
     public JSONObject setTaxIdNumber(String taxIdNumber){
         return setValue("sTaxIDNox", taxIdNumber);

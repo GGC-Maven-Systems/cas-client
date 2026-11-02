@@ -78,7 +78,7 @@ public class IndividualNewController implements Initializable {
     @FXML
     private AnchorPane AnchorMain, anchorPersonal, anchorAddress, anchorMobile, anchorEmail, anchorSocMed, draggablePane;
     @FXML
-    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtPersonal23, txtPersonal24, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
+    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtPersonal23, txtPersonal24,txtPersonal25,txtPersonal26, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
     @FXML
     private TextArea txtField03, txtSocial02;
     @FXML
@@ -666,6 +666,23 @@ public class IndividualNewController implements Initializable {
                     }
                     txtField.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
                     break;
+                case 25:
+                    poJSON = poClient.getModel().setFatherName(lsValue);;
+
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+
+                    txtField.setText(poClient.getModel().getFatherName());
+                    break;
+                case 26:
+                    poJSON = poClient.getModel().setMotherName(lsValue);;
+
+                    if (!"success".equals((String) poJSON.get("result"))) {
+                        ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
+                    }
+
+                    txtField.setText(poClient.getModel().getMotherName());
             }
         } else {//got focus
             txtField.selectAll();
@@ -1817,6 +1834,9 @@ public class IndividualNewController implements Initializable {
             txtPersonal22.setText(String.valueOf(poClient.ClientEmployment().getOfficeEmail()));
             txtPersonal23.setText(String.valueOf(poClient.ClientEmployment().getWorkYears()));
             txtPersonal24.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
+
+            txtPersonal25.setText(poClient.getModel().getFatherName());
+            txtPersonal26.setText(poClient.getModel().getMotherName());
         } catch (SQLException | GuanzonException e) {
             e.printStackTrace();
         }
