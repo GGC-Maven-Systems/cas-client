@@ -863,6 +863,7 @@ public class Account_Accreditation extends Parameter {
         loClient.setGRider(poGRider);
         loClient.setLogWrapper(null);
         loClient.setCategoryCode((String) getModel().getCategoryCode());
+        loClient.setRequiredPayeee(true);
 
         //filter client type 
         loClient.setClientType(ClientType.INSTITUTION);

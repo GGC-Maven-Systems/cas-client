@@ -37,6 +37,7 @@ public class ClientGUI extends Application {
     private static String psRoleId;
     private static boolean pbByCode;
     private static String psClientTp;
+    private static boolean pbRequired;
     private static boolean pbCancelled;
     
     private static String psCategory;
@@ -62,6 +63,10 @@ public class ClientGUI extends Application {
     }
     public void setClientType(String clientType){
         psClientTp = clientType;
+    }
+    
+        public void setRequiredPayeee(boolean requiredPayment) {
+        pbRequired = requiredPayment;
     }
     
     public void setStagePosition(double X, double Y){
@@ -170,6 +175,7 @@ public class ClientGUI extends Application {
             controller.setLogWrapper(poWrapper);
             controller.setClientId(psClientId);
             controller.setCategoryCode(psCategory);
+            controller.setRequiredPayeee(pbRequired);
 
             loader.setController(controller);
 

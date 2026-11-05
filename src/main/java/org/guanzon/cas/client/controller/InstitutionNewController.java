@@ -230,8 +230,13 @@ public class InstitutionNewController implements Initializable {
     private boolean pbLoaded;
     private boolean pbCancelled;
     private boolean pbLoadingData;
+    private boolean pbRequired;
 
     private String psCategory;
+
+    public void setRequiredPayeee(boolean requiredPayment) {
+        pbRequired = requiredPayment;
+    }
 
     public void setGRider(GRiderCAS griderCAS) {
         poGRider = griderCAS;
@@ -296,6 +301,8 @@ public class InstitutionNewController implements Initializable {
                     break;
                 case "btnSave":
                     if (pnEditMode == EditMode.ADDNEW || pnEditMode == EditMode.UPDATE) {
+
+                        poClient.setRequiredPayeee(pbRequired);
                         poJSON = poClient.saveRecord();
                         System.out.println(poJSON.toJSONString());
                         if (!"success".equals((String) poJSON.get("result"))) {
@@ -862,7 +869,7 @@ public class InstitutionNewController implements Initializable {
                             (String) poClient.Address(lnCtr).getAddress(),
                             (String) poClient.Address(lnCtr).Town().getDescription(),
                             (String) poClient.Address(lnCtr).Barangay().getBarangayName()));
-                    
+
                     //comment aldrich 5/27/2026 , conflicting to if 1 remaining item is inactive, then its primary must be false
                     //set primary address the first item, only if size is 1
 //                    if (poClient.getAddressCount() == 1 && lnCtr == 0) {

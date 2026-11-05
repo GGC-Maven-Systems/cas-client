@@ -13,19 +13,23 @@ import org.guanzon.appdriver.constant.OwnershipType;
 import org.guanzon.appdriver.constant.RecordStatus;
 import org.json.simple.JSONObject;
 
-public class Model_Client_Mobile extends Model{
+public class Model_Client_Mobile extends Model {
+
     Model_Client_Master poClient;
-    
+
     @Override
     public void initialize() {
         try {
             poEntity = MiscUtil.xml2ResultSet(System.getProperty("sys.default.path.metadata") + XML, getTable());
-            
+
             poEntity.last();
             poEntity.moveToInsertRow();
 
             MiscUtil.initRowSet(poEntity);
-            
+            poEntity.insertRow();
+            poEntity.moveToCurrentRow();
+
+            poEntity.absolute(1);
             //assign default values
             poEntity.updateObject("nUnreachx", 0);
             poEntity.updateObject("dLastVeri", SQLUtil.toDate("1900-01-01", SQLUtil.FORMAT_SHORT_DATE));
@@ -46,135 +50,128 @@ public class Model_Client_Mobile extends Model{
             poEntity.updateString("cRecdStat", RecordStatus.ACTIVE);
             //end - assign default values
 
-            poEntity.insertRow();
-            poEntity.moveToCurrentRow();
-
-            poEntity.absolute(1);
-
             ID = poEntity.getMetaData().getColumnLabel(1);
 
             //poClient is intentionally NOT constructed here - see Client() below, which builds
             //it lazily on first access. NOTE: Client() has no FK-driven fetch logic today (it
             //never called openRecord() even before this change) - only construction was moved.
-
             pnEditMode = EditMode.UNKNOWN;
         } catch (SQLException e) {
             logwrapr.severe(e.getMessage());
             System.exit(1);
         }
     }
-    
-    
-    public JSONObject setMobileId(String mobileId){
+
+    public JSONObject setMobileId(String mobileId) {
         return setValue("sMobileID", mobileId);
     }
 
-    public String getMobileId(){
+    public String getMobileId() {
         return (String) getValue("sMobileID");
     }
-    
-    public JSONObject setClientId(String clientId){
+
+    public JSONObject setClientId(String clientId) {
         return setValue("sClientID", clientId);
     }
 
-    public String getClientId(){
+    public String getClientId() {
         return (String) getValue("sClientID");
     }
-    
-    public JSONObject setMobileNo(String mobileNo){
+
+    public JSONObject setMobileNo(String mobileNo) {
         return setValue("sMobileNo", mobileNo);
     }
 
-    public String getMobileNo(){
+    public String getMobileNo() {
         return (String) getValue("sMobileNo");
     }
-    
-    public JSONObject setMobileType(String mobileType){
+
+    public JSONObject setMobileType(String mobileType) {
         return setValue("cMobileTp", mobileType);
     }
 
-    public String getMobileType(){
+    public String getMobileType() {
         return (String) getValue("cMobileTp");
     }
-    
-    public JSONObject setOwnershipType(String ownershipType){
+
+    public JSONObject setOwnershipType(String ownershipType) {
         return setValue("cOwnerxxx", ownershipType);
     }
 
-    public String getOwnershipType(){
+    public String getOwnershipType() {
         return (String) getValue("cOwnerxxx");
     }
-    
-    public JSONObject isPrimaryMobile(boolean isPrimaryMobile){
+
+    public JSONObject isPrimaryMobile(boolean isPrimaryMobile) {
         return setValue("cPrimaryx", isPrimaryMobile ? "1" : "0");
     }
 
-    public boolean isPrimaryMobile(){
+    public boolean isPrimaryMobile() {
         return ((String) getValue("cPrimaryx")).equals("1");
     }
-    
-    public JSONObject isAcceptingMarketing(boolean isAcceptingMarketing){
+
+    public JSONObject isAcceptingMarketing(boolean isAcceptingMarketing) {
         return setValue("cIncdMktg", isAcceptingMarketing ? "1" : "0");
     }
 
-    public boolean isAcecptingMarketing(){
+    public boolean isAcecptingMarketing() {
         return ((String) getValue("cIncdMktg")).equals("1");
     }
-    
-    public JSONObject setMobileNetwork(String networkType){
+
+    public JSONObject setMobileNetwork(String networkType) {
         return setValue("cSubscrbr", networkType);
     }
 
-    public String getMobileNetwork(){
+    public String getMobileNetwork() {
         return (String) getValue("cSubscrbr");
     }
-    
-    public JSONObject isNewContact(boolean isNewContact){
+
+    public JSONObject isNewContact(boolean isNewContact) {
         return setValue("cNewMobil", isNewContact ? "1" : "0");
     }
 
-    public boolean isNewContact(){
+    public boolean isNewContact() {
         return ((String) getValue("cNewMobil")).equals("1");
     }
-    
-    public JSONObject setSourceCode(String sourceCode){
+
+    public JSONObject setSourceCode(String sourceCode) {
         return setValue("sSourceCd", sourceCode);
     }
 
-    public String getSourceCode(){
+    public String getSourceCode() {
         return (String) getValue("sSourceCd");
     }
-    
-    public JSONObject setSourceNo(String sourceNo){
+
+    public JSONObject setSourceNo(String sourceNo) {
         return setValue("sReferNox", sourceNo);
     }
 
-    public String getSourceNo(){
+    public String getSourceNo() {
         return (String) getValue("sReferNox");
     }
-    
-    public JSONObject setRecordStatus(String recordStatus){
+
+    public JSONObject setRecordStatus(String recordStatus) {
         return setValue("cRecdStat", recordStatus);
     }
-    
-    public String getRecordStatus(){
+
+    public String getRecordStatus() {
         return (String) getValue("cRecdStat");
     }
-       
-    public JSONObject setModifiedDate(Date modifiedDate){
+
+    public JSONObject setModifiedDate(Date modifiedDate) {
         return setValue("dModified", modifiedDate);
     }
-    
-    public Date getModifiedDate(){
+
+    public Date getModifiedDate() {
         return (Date) getValue("dModified");
     }
-    
+
     @Override
-    public String getNextCode(){
-        return MiscUtil.getNextCode(getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode()); 
+    public String getNextCode() {
+        return MiscUtil.getNextCode(getTable(), ID, true, poGRider.getGConnection().getConnection(), poGRider.getBranchCode());
     }
-    
-    public Model_Client_Master Client() throws SQLException, GuanzonException{
+
+    public Model_Client_Master Client() throws SQLException, GuanzonException {
         if (poClient == null) {
             poClient = new Model_Client_Master();
             poClient.setApplicationDriver(poGRider);

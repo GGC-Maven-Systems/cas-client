@@ -78,7 +78,7 @@ public class IndividualNewController implements Initializable {
     @FXML
     private AnchorPane AnchorMain, anchorPersonal, anchorAddress, anchorMobile, anchorEmail, anchorSocMed, draggablePane;
     @FXML
-    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtPersonal23, txtPersonal24,txtPersonal25,txtPersonal26, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
+    private TextField txtField01, txtField02, txtPersonal02, txtPersonal03, txtPersonal04, txtPersonal05, txtPersonal06, txtPersonal08, txtPersonal11, txtPersonal12, txtPersonal13, txtPersonal15, txtPersonal14, txtPersonal16, txtPersonal21, txtPersonal19, txtPersonal17, txtPersonal20, txtPersonal18, txtPersonal22, txtPersonal23, txtPersonal24, txtPersonal25, txtPersonal26, txtAddress03, txtAddress04, txtAddress05, txtAddress01, txtAddress02, txtAddress06, txtAddress07, txtMobile01, txtEmail01, txtSocial01;
     @FXML
     private TextArea txtField03, txtSocial02;
     @FXML
@@ -667,7 +667,8 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(String.valueOf(setIntegerValueToDecimalFormat(poClient.ClientEmployment().getGrossIncome(), false)));
                     break;
                 case 25:
-                    poJSON = poClient.getModel().setFatherName(lsValue);;
+                    poJSON = poClient.getModel().setFatherName(lsValue);
+                    ;
 
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
@@ -676,7 +677,8 @@ public class IndividualNewController implements Initializable {
                     txtField.setText(poClient.getModel().getFatherName());
                     break;
                 case 26:
-                    poJSON = poClient.getModel().setMotherName(lsValue);;
+                    poJSON = poClient.getModel().setMotherName(lsValue);
+                    ;
 
                     if (!"success".equals((String) poJSON.get("result"))) {
                         ShowMessageFX.Error(getStage(), (String) poJSON.get("message"), "Warning", MODULE);
@@ -1498,17 +1500,19 @@ public class IndividualNewController implements Initializable {
             poClient.getModel().setCivilStatus(String.valueOf(cmbPersonal10.getSelectionModel().getSelectedIndex()));
 
             cmbMobile01.getSelectionModel().selectFirst();
-            poClient.Mobile(pnMobile).setOwnershipType(String.valueOf(cmbMobile01.getSelectionModel().getSelectedIndex()));
-
             cmbMobile02.getSelectionModel().selectFirst();
-            poClient.Mobile(pnMobile).setMobileType(String.valueOf(cmbMobile02.getSelectionModel().getSelectedIndex()));
-
+            if (poClient.Mobile(pnMobile) != null) {
+                poClient.Mobile(pnMobile).setOwnershipType(String.valueOf(cmbMobile01.getSelectionModel().getSelectedIndex()));
+                poClient.Mobile(pnMobile).setMobileType(String.valueOf(cmbMobile02.getSelectionModel().getSelectedIndex()));
+            }
             cmbEmail01.getSelectionModel().selectFirst();
-            poClient.Mail(pnEmail).setOwnershipType(String.valueOf(cmbEmail01.getSelectionModel().getSelectedIndex()));
-
+            if (poClient.Mail(pnEmail) != null) {
+                poClient.Mail(pnEmail).setOwnershipType(String.valueOf(cmbEmail01.getSelectionModel().getSelectedIndex()));
+            }
             cmbSocMed01.getSelectionModel().selectFirst();
-            poClient.SocMed(pnSocmed).setSocMedType(String.valueOf(cmbSocMed01.getSelectionModel().getSelectedIndex()));
-
+            if (poClient.SocMed(pnSocmed) != null) {
+                poClient.SocMed(pnSocmed).setSocMedType(String.valueOf(cmbSocMed01.getSelectionModel().getSelectedIndex()));
+            }
             loadRecordPersonalInfo();
             loadRecordAddress();
             loadRecordMobile();
@@ -1797,7 +1801,7 @@ public class IndividualNewController implements Initializable {
                 }
             }
 
-            if (!poClient.getModel().getBirthPlaceId().equals("")) {
+            if (poClient.getModel().getBirthPlaceId() != null && !poClient.getModel().getBirthPlaceId().equals("")) {
 
                 TownCity loTownCity = new TownCity();
                 loTownCity.setApplicationDriver(poGRider);
